@@ -1,0 +1,1070 @@
+[
+  {
+    "id": "magic-wand-rank-1",
+    "name": "Magic Wand (1st-Rank Spell)",
+    "level": 3,
+    "price": "60 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 1,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-2",
+    "name": "Magic Wand (2nd-Rank Spell)",
+    "level": 5,
+    "price": "160 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 2,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-3",
+    "name": "Magic Wand (3rd-Rank Spell)",
+    "level": 7,
+    "price": "360 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 3,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-4",
+    "name": "Magic Wand (4th-Rank Spell)",
+    "level": 9,
+    "price": "700 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 4,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-5",
+    "name": "Magic Wand (5th-Rank Spell)",
+    "level": 11,
+    "price": "1,500 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 5,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-6",
+    "name": "Magic Wand (6th-Rank Spell)",
+    "level": 13,
+    "price": "3,000 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 6,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-7",
+    "name": "Magic Wand (7th-Rank Spell)",
+    "level": 15,
+    "price": "6,500 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 7,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-8",
+    "name": "Magic Wand (8th-Rank Spell)",
+    "level": 17,
+    "price": "15,000 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 8,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "magic-wand-rank-9",
+    "name": "Magic Wand (9th-Rank Spell)",
+    "level": 19,
+    "price": "40,000 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 9,
+    "traits": [
+      "magical",
+      "wand"
+    ]
+  },
+  {
+    "id": "wand-of-manifold-missiles-1",
+    "name": "Wand of Manifold Missiles (1st)",
+    "level": 3,
+    "price": "70 gp",
+    "rarity": "uncommon",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 1,
+    "traits": [
+      "magical",
+      "wand",
+      "uncommon"
+    ]
+  },
+  {
+    "id": "wand-of-manifold-missiles-3",
+    "name": "Wand of Manifold Missiles (3rd)",
+    "level": 7,
+    "price": "400 gp",
+    "rarity": "uncommon",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 3,
+    "traits": [
+      "magical",
+      "wand",
+      "uncommon"
+    ]
+  },
+  {
+    "id": "wand-of-smoldering-fireballs",
+    "name": "Wand of Smoldering Fireballs (3rd)",
+    "level": 8,
+    "price": "500 gp",
+    "rarity": "uncommon",
+    "type": "consumable",
+    "category": "wand",
+    "isWand": true,
+    "spellRank": 3,
+    "traits": [
+      "magical",
+      "wand",
+      "uncommon",
+      "fire"
+    ]
+  },
+  {
+    "id": "scroll-rank-1",
+    "name": "Scroll (1st-Rank Spell)",
+    "level": 1,
+    "price": "4 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 1,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-2",
+    "name": "Scroll (2nd-Rank Spell)",
+    "level": 3,
+    "price": "12 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 2,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-3",
+    "name": "Scroll (3rd-Rank Spell)",
+    "level": 5,
+    "price": "30 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 3,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-4",
+    "name": "Scroll (4th-Rank Spell)",
+    "level": 7,
+    "price": "70 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 4,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-5",
+    "name": "Scroll (5th-Rank Spell)",
+    "level": 9,
+    "price": "150 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 5,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-6",
+    "name": "Scroll (6th-Rank Spell)",
+    "level": 11,
+    "price": "300 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 6,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-7",
+    "name": "Scroll (7th-Rank Spell)",
+    "level": 13,
+    "price": "600 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 7,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-8",
+    "name": "Scroll (8th-Rank Spell)",
+    "level": 15,
+    "price": "1,300 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 8,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-9",
+    "name": "Scroll (9th-Rank Spell)",
+    "level": 17,
+    "price": "3,000 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 9,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "scroll-rank-10",
+    "name": "Scroll (10th-Rank Spell)",
+    "level": 19,
+    "price": "8,000 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "scroll",
+    "isScroll": true,
+    "spellRank": 10,
+    "traits": [
+      "consumable",
+      "magical",
+      "scroll"
+    ]
+  },
+  {
+    "id": "healing-potion-minor",
+    "name": "Healing Potion (Minor)",
+    "level": 1,
+    "price": "4 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "potion",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "consumable",
+      "healing",
+      "magical",
+      "potion"
+    ]
+  },
+  {
+    "id": "healing-potion-lesser",
+    "name": "Healing Potion (Lesser)",
+    "level": 3,
+    "price": "12 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "potion",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "consumable",
+      "healing",
+      "magical",
+      "potion"
+    ]
+  },
+  {
+    "id": "healing-potion-moderate",
+    "name": "Healing Potion (Moderate)",
+    "level": 6,
+    "price": "50 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "potion",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "consumable",
+      "healing",
+      "magical",
+      "potion"
+    ]
+  },
+  {
+    "id": "healing-potion-greater",
+    "name": "Healing Potion (Greater)",
+    "level": 12,
+    "price": "400 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "potion",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "consumable",
+      "healing",
+      "magical",
+      "potion"
+    ]
+  },
+  {
+    "id": "healing-potion-major",
+    "name": "Healing Potion (Major)",
+    "level": 18,
+    "price": "5,000 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "potion",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "consumable",
+      "healing",
+      "magical",
+      "potion"
+    ]
+  },
+  {
+    "id": "alchemists-fire-lesser",
+    "name": "Alchemist's Fire (Lesser)",
+    "level": 1,
+    "price": "3 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "bomb",
+      "consumable",
+      "fire"
+    ]
+  },
+  {
+    "id": "alchemists-fire-moderate",
+    "name": "Alchemist's Fire (Moderate)",
+    "level": 3,
+    "price": "10 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "bomb",
+      "consumable",
+      "fire"
+    ]
+  },
+  {
+    "id": "alchemists-fire-greater",
+    "name": "Alchemist's Fire (Greater)",
+    "level": 11,
+    "price": "250 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "bomb",
+      "consumable",
+      "fire"
+    ]
+  },
+  {
+    "id": "elixir-of-life-minor",
+    "name": "Elixir of Life (Minor)",
+    "level": 1,
+    "price": "3 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "elixir",
+      "healing"
+    ]
+  },
+  {
+    "id": "elixir-of-life-lesser",
+    "name": "Elixir of Life (Lesser)",
+    "level": 5,
+    "price": "30 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "elixir",
+      "healing"
+    ]
+  },
+  {
+    "id": "elixir-of-life-moderate",
+    "name": "Elixir of Life (Moderate)",
+    "level": 9,
+    "price": "150 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "elixir",
+      "healing"
+    ]
+  },
+  {
+    "id": "antidote-lesser",
+    "name": "Antidote (Lesser)",
+    "level": 1,
+    "price": "3 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "consumable",
+      "elixir"
+    ]
+  },
+  {
+    "id": "smokeball-lesser",
+    "name": "Smokeball (Lesser)",
+    "level": 1,
+    "price": "3 gp",
+    "rarity": "common",
+    "type": "consumable",
+    "category": "alchemical",
+    "isBatchable": true,
+    "defaultBatch": 4,
+    "traits": [
+      "alchemical",
+      "consumable"
+    ]
+  },
+  {
+    "id": "weapon-potency-1",
+    "name": "Weapon Potency (+1)",
+    "level": 2,
+    "price": "35 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "weapon-potency-2",
+    "name": "Weapon Potency (+2)",
+    "level": 10,
+    "price": "935 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "weapon-potency-3",
+    "name": "Weapon Potency (+3)",
+    "level": 16,
+    "price": "8,935 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "striking-rune",
+    "name": "Striking Rune",
+    "level": 4,
+    "price": "65 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "greater-striking-rune",
+    "name": "Greater Striking Rune",
+    "level": 12,
+    "price": "1,065 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "major-striking-rune",
+    "name": "Major Striking Rune",
+    "level": 19,
+    "price": "31,065 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "armor-potency-1",
+    "name": "Armor Potency (+1)",
+    "level": 5,
+    "price": "160 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "armor-potency-2",
+    "name": "Armor Potency (+2)",
+    "level": 11,
+    "price": "1,060 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "armor-potency-3",
+    "name": "Armor Potency (+3)",
+    "level": 18,
+    "price": "20,560 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "resilient-rune",
+    "name": "Resilient Rune",
+    "level": 8,
+    "price": "340 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "greater-resilient-rune",
+    "name": "Greater Resilient Rune",
+    "level": 14,
+    "price": "3,440 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "fundamental",
+      "rune"
+    ]
+  },
+  {
+    "id": "flaming-rune",
+    "name": "Flaming Rune",
+    "level": 8,
+    "price": "500 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "property",
+      "rune",
+      "fire"
+    ]
+  },
+  {
+    "id": "frost-rune",
+    "name": "Frost Rune",
+    "level": 8,
+    "price": "500 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "property",
+      "rune",
+      "cold"
+    ]
+  },
+  {
+    "id": "shock-rune",
+    "name": "Shock Rune",
+    "level": 8,
+    "price": "500 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "property",
+      "rune",
+      "electricity"
+    ]
+  },
+  {
+    "id": "ghost-touch-rune",
+    "name": "Ghost Touch Rune",
+    "level": 4,
+    "price": "75 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "rune",
+    "traits": [
+      "magical",
+      "property",
+      "rune"
+    ]
+  },
+  {
+    "id": "longsword",
+    "name": "Longsword",
+    "level": 0,
+    "price": "1 gp",
+    "rarity": "common",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "versatile-p"
+    ]
+  },
+  {
+    "id": "dagger",
+    "name": "Dagger",
+    "level": 0,
+    "price": "2 sp",
+    "rarity": "common",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "agile",
+      "finesse",
+      "thrown-10ft",
+      "versatile-s"
+    ]
+  },
+  {
+    "id": "shortbow",
+    "name": "Shortbow",
+    "level": 0,
+    "price": "3 gp",
+    "rarity": "common",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "deadly-d10"
+    ]
+  },
+  {
+    "id": "composite-shortbow",
+    "name": "Composite Shortbow",
+    "level": 0,
+    "price": "14 gp",
+    "rarity": "common",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "deadly-d10",
+      "propulsive"
+    ]
+  },
+  {
+    "id": "greatsword",
+    "name": "Greatsword",
+    "level": 0,
+    "price": "2 gp",
+    "rarity": "common",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "versatile-p"
+    ]
+  },
+  {
+    "id": "breastplate",
+    "name": "Breastplate",
+    "level": 0,
+    "price": "8 gp",
+    "rarity": "common",
+    "type": "armor",
+    "category": "armor",
+    "traits": [
+      "medium"
+    ]
+  },
+  {
+    "id": "full-plate",
+    "name": "Full Plate",
+    "level": 0,
+    "price": "30 gp",
+    "rarity": "common",
+    "type": "armor",
+    "category": "armor",
+    "traits": [
+      "heavy",
+      "bulwark"
+    ]
+  },
+  {
+    "id": "leather-armor",
+    "name": "Leather Armor",
+    "level": 0,
+    "price": "1 gp",
+    "rarity": "common",
+    "type": "armor",
+    "category": "armor",
+    "traits": [
+      "light"
+    ]
+  },
+  {
+    "id": "spiked-chain",
+    "name": "Spiked Chain",
+    "level": 0,
+    "price": "3 gp",
+    "rarity": "uncommon",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "disarm",
+      "finesse",
+      "trip",
+      "uncommon"
+    ]
+  },
+  {
+    "id": "meteor-hammer",
+    "name": "Meteor Hammer",
+    "level": 0,
+    "price": "3 gp",
+    "rarity": "uncommon",
+    "type": "weapon",
+    "category": "weapon",
+    "traits": [
+      "backswing",
+      "disarm",
+      "reach",
+      "trip",
+      "uncommon"
+    ]
+  },
+  {
+    "id": "bag-of-holding",
+    "name": "Spacious Pouch (Bag of Holding)",
+    "level": 4,
+    "price": "75 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "extradimensional",
+      "magical"
+    ]
+  },
+  {
+    "id": "lifting-belt",
+    "name": "Lifting Belt",
+    "level": 4,
+    "price": "80 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical"
+    ]
+  },
+  {
+    "id": "boots-of-elvenkind",
+    "name": "Boots of Elvenkind",
+    "level": 7,
+    "price": "340 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical"
+    ]
+  },
+  {
+    "id": "bracers-of-armor-1",
+    "name": "Bracers of Armor (+1)",
+    "level": 6,
+    "price": "220 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical"
+    ]
+  },
+  {
+    "id": "bracers-of-armor-2",
+    "name": "Bracers of Armor (+2)",
+    "level": 11,
+    "price": "1,400 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical"
+    ]
+  },
+  {
+    "id": "cloak-of-elvenkind",
+    "name": "Cloak of Elvenkind",
+    "level": 7,
+    "price": "360 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical"
+    ]
+  },
+  {
+    "id": "ring-of-wizardry-1",
+    "name": "Ring of Wizardry (1st)",
+    "level": 7,
+    "price": "360 gp",
+    "rarity": "rare",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical",
+      "rare"
+    ]
+  },
+  {
+    "id": "ring-of-sustenance",
+    "name": "Ring of Sustenance",
+    "level": 7,
+    "price": "350 gp",
+    "rarity": "uncommon",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical",
+      "uncommon"
+    ]
+  },
+  {
+    "id": "reading-ring",
+    "name": "Reading Ring",
+    "level": 1,
+    "price": "15 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "invested",
+      "magical"
+    ]
+  },
+  {
+    "id": "travelers-chair",
+    "name": "Traveler's Chair",
+    "level": 1,
+    "price": "10 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "magical"
+    ]
+  },
+  {
+    "id": "everlight-crystal",
+    "name": "Everlight Crystal",
+    "level": 1,
+    "price": "15 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": [
+      "light",
+      "magical"
+    ]
+  },
+  {
+    "id": "healers-toolkit",
+    "name": "Healer's Toolkit",
+    "level": 0,
+    "price": "5 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": []
+  },
+  {
+    "id": "artisans-toolkit-sterling",
+    "name": "Artisan's Toolkit (Sterling)",
+    "level": 3,
+    "price": "50 gp",
+    "rarity": "common",
+    "type": "equipment",
+    "category": "gear",
+    "traits": []
+  }
+]

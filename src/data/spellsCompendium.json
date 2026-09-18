@@ -1,0 +1,1129 @@
+[
+  {
+    "id": "spell-needle-darts",
+    "name": "Needle Darts",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "attack",
+      "cantrip",
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-void-warp",
+    "name": "Void Warp",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate",
+      "manipulate",
+      "void"
+    ]
+  },
+  {
+    "id": "spell-shield",
+    "name": "Shield",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate",
+      "force"
+    ]
+  },
+  {
+    "id": "spell-guidance",
+    "name": "Guidance",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate"
+    ]
+  },
+  {
+    "id": "spell-detect-magic",
+    "name": "Detect Magic",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate",
+      "detection",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-electric-arc",
+    "name": "Electric Arc",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate",
+      "electricity",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-light",
+    "name": "Light",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate",
+      "light",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-telekinetic-projectile",
+    "name": "Telekinetic Projectile",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "attack",
+      "cantrip",
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-haunting-hymn",
+    "name": "Haunting Hymn",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "auditory",
+      "cantrip",
+      "concentrate",
+      "manipulate",
+      "sonic"
+    ]
+  },
+  {
+    "id": "spell-ignition",
+    "name": "Ignition",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "attack",
+      "cantrip",
+      "concentrate",
+      "fire",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-frostbite",
+    "name": "Frostbite",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "cantrip",
+      "cold",
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-figment",
+    "name": "Figment",
+    "rank": 0,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "cantrip",
+      "concentrate",
+      "illusion",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-heal",
+    "name": "Heal",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "healing",
+      "manipulate",
+      "vitality"
+    ]
+  },
+  {
+    "id": "spell-magic-missile",
+    "name": "Force Barrage (Magic Missile)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "force",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-runic-weapon",
+    "name": "Runic Weapon (Magic Weapon)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-runic-body",
+    "name": "Runic Body (Magic Fang)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-breathe-fire",
+    "name": "Breathe Fire (Burning Hands)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "fire",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-mystic-armor",
+    "name": "Mystic Armor (Mage Armor)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-phantasmal-minion",
+    "name": "Phantasmal Minion (Unseen Servant)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-phantom-pain",
+    "name": "Phantom Pain",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "illusion",
+      "manipulate",
+      "mental",
+      "nonlethal"
+    ]
+  },
+  {
+    "id": "spell-biting-words",
+    "name": "Biting Words",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "occult"
+    ],
+    "traits": [
+      "auditory",
+      "concentrate",
+      "linguistic",
+      "manipulate",
+      "sonic"
+    ]
+  },
+  {
+    "id": "spell-soothe",
+    "name": "Soothe",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "emotion",
+      "healing",
+      "manipulate",
+      "mental"
+    ]
+  },
+  {
+    "id": "spell-sure-strike",
+    "name": "Sure Strike (True Strike)",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "fortune"
+    ]
+  },
+  {
+    "id": "spell-command",
+    "name": "Command",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "auditory",
+      "concentrate",
+      "linguistic",
+      "manipulate",
+      "mental"
+    ]
+  },
+  {
+    "id": "spell-fear",
+    "name": "Fear",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "emotion",
+      "fear",
+      "manipulate",
+      "mental"
+    ]
+  },
+  {
+    "id": "spell-gust-of-wind",
+    "name": "Gust of Wind",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "air",
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-grease",
+    "name": "Grease",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-hydraulic-push",
+    "name": "Hydraulic Push",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "attack",
+      "concentrate",
+      "manipulate",
+      "water"
+    ]
+  },
+  {
+    "id": "spell-grim-tendrils",
+    "name": "Grim Tendrils",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "void"
+    ]
+  },
+  {
+    "id": "spell-sanctuary",
+    "name": "Sanctuary",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-bless",
+    "name": "Bless",
+    "rank": 1,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-blur",
+    "name": "Blur",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "illusion",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-invisibility",
+    "name": "Invisibility",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "illusion",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-dispel-magic",
+    "name": "Dispel Magic",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-humanoid-form",
+    "name": "Humanoid Form",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "polymorph"
+    ]
+  },
+  {
+    "id": "spell-mirror-image",
+    "name": "Mirror Image",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "illusion",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-resist-energy",
+    "name": "Resist Energy",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-see-the-unseen",
+    "name": "See the Unseen (See Invisibility)",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "detection",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-sound-burst",
+    "name": "Sound Burst",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "sonic"
+    ]
+  },
+  {
+    "id": "spell-telekinetic-maneuver",
+    "name": "Telekinetic Maneuver",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "attack",
+      "concentrate",
+      "force",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-paralyze",
+    "name": "Paralyze",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "incapacitation",
+      "manipulate",
+      "mental"
+    ]
+  },
+  {
+    "id": "spell-barkskin",
+    "name": "Oakstew (Barkskin)",
+    "rank": 2,
+    "rarity": "common",
+    "traditions": [
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "plant"
+    ]
+  },
+  {
+    "id": "spell-fireball",
+    "name": "Fireball",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "fire",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-haste",
+    "name": "Haste",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-slow",
+    "name": "Slow",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-fly",
+    "name": "Fly",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "air",
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-lightning-bolt",
+    "name": "Lightning Bolt",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "electricity",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-vampiric-feast",
+    "name": "Vampiric Feast (Vampiric Touch)",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "death",
+      "manipulate",
+      "void"
+    ]
+  },
+  {
+    "id": "spell-heroism",
+    "name": "Heroism",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "mental",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-hypnotic-pattern",
+    "name": "Hypnotic Pattern",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "illusion",
+      "manipulate",
+      "visual"
+    ]
+  },
+  {
+    "id": "spell-blindness",
+    "name": "Blindness",
+    "rank": 3,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "incapacitation",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-translocate",
+    "name": "Translocate (Dimension Door)",
+    "rank": 4,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "teleportation"
+    ]
+  },
+  {
+    "id": "spell-wall-of-fire",
+    "name": "Wall of Fire",
+    "rank": 4,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "fire",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-confusion",
+    "name": "Confusion",
+    "rank": 4,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "emotion",
+      "manipulate",
+      "mental"
+    ]
+  },
+  {
+    "id": "spell-divine-wrath",
+    "name": "Divine Wrath",
+    "rank": 4,
+    "rarity": "common",
+    "traditions": [
+      "divine"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "sanctified"
+    ]
+  },
+  {
+    "id": "spell-solid-fog",
+    "name": "Solid Fog",
+    "rank": 4,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "water"
+    ]
+  },
+  {
+    "id": "spell-cone-of-cold",
+    "name": "Howling Blizzard (Cone of Cold)",
+    "rank": 5,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "cold",
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-synesthesia",
+    "name": "Synesthesia",
+    "rank": 5,
+    "rarity": "common",
+    "traditions": [
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "mental"
+    ]
+  },
+  {
+    "id": "spell-breath-of-life",
+    "name": "Breath of Life",
+    "rank": 5,
+    "rarity": "common",
+    "traditions": [
+      "divine"
+    ],
+    "traits": [
+      "healing",
+      "manipulate",
+      "vitality"
+    ]
+  },
+  {
+    "id": "spell-wall-of-stone",
+    "name": "Wall of Stone",
+    "rank": 5,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "earth",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-chain-lightning",
+    "name": "Chain Lightning",
+    "rank": 6,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "electricity",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-disintegrate",
+    "name": "Disintegrate",
+    "rank": 6,
+    "rarity": "common",
+    "traditions": [
+      "arcane"
+    ],
+    "traits": [
+      "attack",
+      "concentrate",
+      "force",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-true-seeing",
+    "name": "Truesight (True Seeing)",
+    "rank": 6,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "revelation"
+    ]
+  },
+  {
+    "id": "spell-plane-shift",
+    "name": "Interplanar Teleport (Plane Shift)",
+    "rank": 7,
+    "rarity": "uncommon",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "teleportation",
+      "uncommon"
+    ]
+  },
+  {
+    "id": "spell-regenerate",
+    "name": "Regenerate",
+    "rank": 7,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "healing",
+      "manipulate",
+      "vitality"
+    ]
+  },
+  {
+    "id": "spell-prismatic-spray",
+    "name": "Prismatic Spray",
+    "rank": 7,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "light",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-maze",
+    "name": "Quandary (Maze)",
+    "rank": 8,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "extradimensional",
+      "manipulate",
+      "teleportation"
+    ]
+  },
+  {
+    "id": "spell-earthquake",
+    "name": "Earthquake",
+    "rank": 8,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "earth",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-mass-haste",
+    "name": "Mass Haste (Haste 9th)",
+    "rank": 9,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-wail-of-the-banshee",
+    "name": "Wail of the Banshee",
+    "rank": 9,
+    "rarity": "common",
+    "traditions": [
+      "divine",
+      "occult"
+    ],
+    "traits": [
+      "auditory",
+      "concentrate",
+      "death",
+      "manipulate",
+      "void"
+    ]
+  },
+  {
+    "id": "spell-time-stop",
+    "name": "Time Stop",
+    "rank": 10,
+    "rarity": "common",
+    "traditions": [
+      "arcane",
+      "occult"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate"
+    ]
+  },
+  {
+    "id": "spell-wish",
+    "name": "Wish (Miracle/Alter Reality)",
+    "rank": 10,
+    "rarity": "rare",
+    "traditions": [
+      "arcane",
+      "divine",
+      "occult",
+      "primal"
+    ],
+    "traits": [
+      "concentrate",
+      "manipulate",
+      "rare"
+    ]
+  }
+]
