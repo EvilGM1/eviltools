@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, KeyRound, ShieldAlert, Sparkles, ArrowRight } from 'lucide-react';
 
 // SHA-256 hash of the default party passcode
-const DEFAULT_PASSCODE_HASH = 'c7d8ef5b420466a0c013a770e9cf07a0dd112593b97e664890dec8a404149179';
+const DEFAULT_PASSCODE_HASH = '0bab7134b8796ca8afd41279f11768ebc8ec50c41044c283347dc546199e8d63';
 
 async function computeSHA256(text) {
   try {
