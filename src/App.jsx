@@ -14,7 +14,7 @@ const DEFAULT_CHARACTERS = [
     level: 5,
     characterClass: 'Wizard',
     source: 'preset',
-    wealth: { gp: 45, sp: 8, cp: 0 },
+    wealth: { pp: 0, gp: 45, sp: 8, cp: 0 },
     skills: {
       crafting: { rank: 1, mod: 9, rankName: 'Trained' },
       arcana: { rank: 2, mod: 13, rankName: 'Expert' },
@@ -57,7 +57,7 @@ const DEFAULT_CHARACTERS = [
     level: 5,
     characterClass: 'Occult Witch',
     source: 'preset',
-    wealth: { gp: 62, sp: 5, cp: 0 },
+    wealth: { pp: 0, gp: 62, sp: 5, cp: 0 },
     skills: {
       crafting: { rank: 1, mod: 9, rankName: 'Trained' },
       arcana: { rank: 0, mod: 2, rankName: 'Untrained' },
@@ -99,7 +99,7 @@ const DEFAULT_CHARACTERS = [
     level: 5,
     characterClass: 'Runesmith / Crafter',
     source: 'preset',
-    wealth: { gp: 88, sp: 0, cp: 0 },
+    wealth: { pp: 0, gp: 88, sp: 0, cp: 0 },
     skills: {
       crafting: { rank: 2, mod: 13, rankName: 'Expert' },
       arcana: { rank: 1, mod: 9, rankName: 'Trained' },
@@ -256,7 +256,7 @@ export function App() {
       level: 1,
       characterClass: 'Wizard',
       source: 'custom',
-      wealth: { gp: 15, sp: 0, cp: 0 },
+      wealth: { pp: 0, gp: 15, sp: 0, cp: 0 },
       skills: {
         crafting: { rank: 1, mod: 5, rankName: 'Trained' },
         arcana: { rank: 1, mod: 5, rankName: 'Trained' },
@@ -295,7 +295,7 @@ export function App() {
           level: 1,
           characterClass: 'Adventurer',
           source: 'custom',
-          wealth: { gp: 15, sp: 0, cp: 0 },
+          wealth: { pp: 0, gp: 15, sp: 0, cp: 0 },
           skills: {
             crafting: { rank: 1, mod: 5, rankName: 'Trained' },
             arcana: { rank: 1, mod: 5, rankName: 'Trained' },

@@ -43,6 +43,14 @@ export function ScribeSuite({
   const [selectedSpell, setSelectedSpell] = useState(spellsData[0]);
   const [spellDescription, setSpellDescription] = useState('');
 
+  // Sync tradition when active character changes
+  React.useEffect(() => {
+    const charTrad = character?.spellcasting?.traditions?.[0];
+    if (charTrad && ['arcane', 'occult', 'divine', 'primal'].includes(charTrad.toLowerCase())) {
+      setSelectedTradition(charTrad.toLowerCase());
+    }
+  }, [character?.id, character?.spellcasting?.traditions]);
+
   // Load description dynamically
   React.useEffect(() => {
     let active = true;
@@ -199,10 +207,19 @@ export function ScribeSuite({
   };
 
   const handleRemoveLearnedSpell = (spellNameToRemove) => {
-    const updated = (character.learnedSpells || []).filter(s => s !== spellNameToRemove);
+    const updatedLearned = (character.learnedSpells || []).filter(s => s !== spellNameToRemove);
+    const updatedEntries = (character?.spellcasting?.entries || []).map(entry => ({
+      ...entry,
+      spells: (entry.spells || []).filter(s => s !== spellNameToRemove)
+    }));
+
     onUpdateCharacter({
       ...character,
-      learnedSpells: updated
+      learnedSpells: updatedLearned,
+      spellcasting: {
+        ...(character.spellcasting || {}),
+        entries: updatedEntries
+      }
     });
   };
 
@@ -496,7 +513,7 @@ export function ScribeSuite({
                   className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-700 via-arcane-700 to-purple-800 hover:from-purple-600 hover:to-arcane-600 text-white font-serif font-bold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-98"
                 >
                   <Sparkles className="w-5 h-5 text-gold-300" />
-                  <span>Roll Learn a Spell Check (+{skillData.mod} vs DC {targetDC})</span>
+                  <span>Roll Learn a Spell Check (+{skillData.mod} {skillLabel} vs DC {targetDC})</span>
                 </button>
               </div>
             </div>

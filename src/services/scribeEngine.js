@@ -60,7 +60,7 @@ export function calculateSpellDC(rank = 1, rarity = 'common') {
  * Remaster Rule: Magical Shorthand makes scribing a flat 10 minutes regardless of spell rank!
  */
 export function calculateScribingTime(character, rank = 1) {
-  const hasShorthand = character?.feats?.magicalShorthand || character?.feats?.spellbookProdigy;
+  const hasShorthand = !!character?.feats?.magicalShorthand;
 
   if (hasShorthand) {
     return {

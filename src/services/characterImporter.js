@@ -4,32 +4,35 @@
  */
 
 /**
- * Normalizes copper value into GP, SP, CP
+ * Normalizes copper value into PP, GP, SP, CP
  */
 export function copperToWealth(copper = 0) {
   const total = Math.max(0, Math.round(copper));
-  const gp = Math.floor(total / 100);
-  const remainder = total % 100;
-  const sp = Math.floor(remainder / 10);
-  const cp = remainder % 10;
-  return { gp, sp, cp, totalCopper: total };
+  const pp = Math.floor(total / 1000);
+  const remPP = total % 1000;
+  const gp = Math.floor(remPP / 100);
+  const remGP = remPP % 100;
+  const sp = Math.floor(remGP / 10);
+  const cp = remGP % 10;
+  return { pp, gp, sp, cp, totalCopper: total };
 }
 
 /**
- * Converts GP, SP, CP to total copper
+ * Converts PP, GP, SP, CP to total copper
  */
-export function wealthToCopper(wealth = { gp: 0, sp: 0, cp: 0 }) {
-  return (wealth.gp || 0) * 100 + (wealth.sp || 0) * 10 + (wealth.cp || 0);
+export function wealthToCopper(wealth = { pp: 0, gp: 0, sp: 0, cp: 0 }) {
+  return (wealth.pp || 0) * 1000 + (wealth.gp || 0) * 100 + (wealth.sp || 0) * 10 + (wealth.cp || 0);
 }
 
 /**
  * Formats wealth into a readable string
  */
-export function formatWealth(wealth = { gp: 0, sp: 0, cp: 0 }) {
+export function formatWealth(wealth = { pp: 0, gp: 0, sp: 0, cp: 0 }) {
   const parts = [];
+  if (wealth.pp > 0) parts.push(`${wealth.pp} pp`);
   if (wealth.gp > 0) parts.push(`${wealth.gp} gp`);
   if (wealth.sp > 0) parts.push(`${wealth.sp} sp`);
-  if (wealth.cp > 0 || parts.length === 0) parts.push(`${wealth.cp} cp`);
+  if (wealth.cp > 0 || parts.length === 0) parts.push(`${wealth.cp || 0} cp`);
   return parts.join(', ');
 }
 
@@ -118,11 +121,12 @@ function parsePathbuilderJSON(b) {
 
   // Money
   const money = b.money || {};
-  const totalCopper = (Number(money.pp) || 0) * 1000 +
-                      (Number(money.gp) || 0) * 100 +
-                      (Number(money.sp) || 0) * 10 +
-                      (Number(money.cp) || 0);
-  const wealth = copperToWealth(totalCopper);
+  const pp = Number(money.pp) || 0;
+  const gp = Number(money.gp) || 0;
+  const sp = Number(money.sp) || 0;
+  const cp = Number(money.cp) || 0;
+  const totalCopper = pp * 1000 + gp * 100 + sp * 10 + cp;
+  const wealth = { pp, gp, sp, cp, totalCopper };
 
   // Feats
   const rawFeats = (b.feats || []).map(f => Array.isArray(f) ? f[0] : (f.name || f));
@@ -239,19 +243,20 @@ function parseFoundryPF2eJSON(f) {
 
   // Money / Coins from items
   const items = Array.isArray(f.items) ? f.items : [];
-  let totalCopper = 0;
+  let pp = 0, gp = 0, sp = 0, cp = 0;
 
   for (const it of items) {
     if (it.type === 'treasure' && (it.system?.category === 'coin' || it.isCoin || it.name.toLowerCase().includes('piece'))) {
       const itName = (it.name || '').toLowerCase();
       const qty = Number(it.system?.quantity) || 1;
-      if (itName.includes('platinum') || itName.includes('pp')) totalCopper += qty * 1000;
-      else if (itName.includes('gold') || itName.includes('gp')) totalCopper += qty * 100;
-      else if (itName.includes('silver') || itName.includes('sp')) totalCopper += qty * 10;
-      else if (itName.includes('copper') || itName.includes('cp')) totalCopper += qty;
+      if (itName.includes('platinum') || itName.includes('pp')) pp += qty;
+      else if (itName.includes('gold') || itName.includes('gp')) gp += qty;
+      else if (itName.includes('silver') || itName.includes('sp')) sp += qty;
+      else if (itName.includes('copper') || itName.includes('cp')) cp += qty;
     }
   }
-  const wealth = copperToWealth(totalCopper);
+  const totalCopper = pp * 1000 + gp * 100 + sp * 10 + cp;
+  const wealth = { pp, gp, sp, cp, totalCopper };
 
   // Feats
   const featItems = items.filter(it => it.type === 'feat');

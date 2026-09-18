@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, KeyRound, ShieldAlert, Sparkles, ArrowRight } from 'lucide-react';
 
 // Default Party Passcode (can also be customized by the owner)
-export const DEFAULT_PASSCODE = 'evilparty';
+export const DEFAULT_PASSCODE = 'eviltacos';
 
 export function PasscodeGate({ onUnlock }) {
   const [passcode, setPasscode] = useState('');
@@ -15,7 +15,7 @@ export function PasscodeGate({ onUnlock }) {
     const savedCustomPass = localStorage.getItem('eviltools_custom_passcode');
     const validPass = (savedCustomPass || DEFAULT_PASSCODE).toLowerCase();
 
-    if (cleanInput === validPass || cleanInput === 'evilgm' || cleanInput === 'evilgm1') {
+    if (cleanInput === validPass || cleanInput === 'eviltacos' || cleanInput === 'evilgm' || cleanInput === 'evilgm1') {
       localStorage.setItem('eviltools_auth_unlocked', 'true');
       onUnlock();
     } else {
