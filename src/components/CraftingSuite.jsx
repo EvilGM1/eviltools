@@ -19,8 +19,7 @@ import {
   BookOpen,
   FileText
 } from 'lucide-react';
-import itemsData from '../data/itemsCompendium.json';
-import spellsData from '../data/spellsCompendium.json';
+import { itemsIndex as itemsData, spellsIndex as spellsData, fetchItemDescription } from '../services/compendiumLoader.js';
 import { 
   calculateCraftingDC, 
   getDailyEarnIncomeRate, 
@@ -43,6 +42,7 @@ export function CraftingSuite({
   const [craftableOnly, setCraftableOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedItem, setSelectedItem] = useState(itemsData[0]);
+  const [itemDescription, setItemDescription] = useState('');
   const [batchQuantity, setBatchQuantity] = useState(1);
   const [selectedImbuedSpell, setSelectedImbuedSpell] = useState('');
   
@@ -56,6 +56,19 @@ export function CraftingSuite({
     category: 'custom',
     traits: ['magical']
   });
+
+  // Load description dynamically
+  React.useEffect(() => {
+    let active = true;
+    if (selectedItem?.id) {
+      fetchItemDescription(selectedItem.id).then(desc => {
+        if (active) setItemDescription(desc);
+      });
+    } else {
+      setItemDescription(selectedItem?.description || '');
+    }
+    return () => { active = false; };
+  }, [selectedItem?.id]);
 
   // Dice Roller Modal state
   const [diceModalOpen, setDiceModalOpen] = useState(false);
@@ -542,7 +555,7 @@ export function CraftingSuite({
               </div>
 
               {/* Item Description & Lore Card */}
-              {selectedItem.description && (
+              {itemDescription && (
                 <div className="p-3.5 rounded-xl bg-parchment-50 border border-parchment-200 text-xs space-y-1.5">
                   <div className="flex items-center gap-1.5 font-serif font-bold text-arcane-950">
                     <FileText className="w-4 h-4 text-forge-700" />
@@ -550,7 +563,7 @@ export function CraftingSuite({
                   </div>
                   <div 
                     className="text-stone-700 text-xs leading-relaxed max-h-48 overflow-y-auto pr-1 prose-sm prose-stone [&_p]:mb-1.5 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4"
-                    dangerouslySetInnerHTML={{ __html: selectedItem.description }}
+                    dangerouslySetInnerHTML={{ __html: itemDescription }}
                   />
                 </div>
               )}
