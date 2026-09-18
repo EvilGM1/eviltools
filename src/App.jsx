@@ -146,7 +146,9 @@ export function App() {
   });
 
   const [activeCharacterId, setActiveCharacterId] = useState(() => {
-    return characters[0]?.id || DEFAULT_CHARACTERS[0].id;
+    const savedId = localStorage.getItem('eviltools_active_char_id');
+    const exists = characters.some(c => c.id === savedId);
+    return exists ? savedId : (characters[0]?.id || DEFAULT_CHARACTERS[0].id);
   });
 
   const [activeTab, setActiveTab] = useState('crafting'); // 'crafting' or 'scribe'
@@ -180,11 +182,18 @@ export function App() {
   // Modals state
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState(null);
 
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('eviltools_characters', JSON.stringify(characters));
   }, [characters]);
+
+  useEffect(() => {
+    if (activeCharacterId) {
+      localStorage.setItem('eviltools_active_char_id', activeCharacterId);
+    }
+  }, [activeCharacterId]);
 
   useEffect(() => {
     localStorage.setItem('eviltools_projects', JSON.stringify(downtimeProjects));
@@ -219,6 +228,11 @@ export function App() {
     }
   };
 
+  const handleOpenEditModal = () => {
+    setEditingCharacter(activeCharacter);
+    setIsEditOpen(true);
+  };
+
   const handleCreateNewCharacter = () => {
     const newChar = {
       id: `char-custom-${Date.now()}`,
@@ -249,17 +263,43 @@ export function App() {
       },
       learnedSpells: []
     };
-    setCharacters([...characters, newChar]);
+    setCharacters([newChar, ...characters]);
     setActiveCharacterId(newChar.id);
+    setEditingCharacter(newChar);
     setIsEditOpen(true);
   };
 
   const handleDeleteCharacter = (charId) => {
-    if (characters.length <= 1) return;
     if (window.confirm('Are you sure you want to delete this character?')) {
       const remaining = characters.filter(c => c.id !== charId);
-      setCharacters(remaining);
-      setActiveCharacterId(remaining[0].id);
+      if (remaining.length === 0) {
+        const freshChar = {
+          id: `char-custom-${Date.now()}`,
+          name: 'New Hero',
+          level: 1,
+          characterClass: 'Adventurer',
+          source: 'custom',
+          wealth: { gp: 15, sp: 0, cp: 0 },
+          skills: {
+            crafting: { rank: 1, mod: 5, rankName: 'Trained' },
+            arcana: { rank: 1, mod: 5, rankName: 'Trained' },
+            nature: { rank: 0, mod: 0, rankName: 'Untrained' },
+            occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
+            religion: { rank: 0, mod: 0, rankName: 'Untrained' }
+          },
+          feats: {},
+          formulas: [],
+          spellcasting: { traditions: ['arcane'], entries: [] },
+          learnedSpells: []
+        };
+        setCharacters([freshChar]);
+        setActiveCharacterId(freshChar.id);
+      } else {
+        setCharacters(remaining);
+        if (activeCharacterId === charId) {
+          setActiveCharacterId(remaining[0].id);
+        }
+      }
     }
   };
 
@@ -273,7 +313,7 @@ export function App() {
         activeCharacterId={activeCharacterId}
         setActiveCharacterId={setActiveCharacterId}
         onOpenImport={() => setIsImportOpen(true)}
-        onOpenEdit={() => setIsEditOpen(true)}
+        onOpenEdit={handleOpenEditModal}
         onOpenNew={handleCreateNewCharacter}
         onDeleteCharacter={handleDeleteCharacter}
       />
@@ -322,8 +362,11 @@ export function App() {
 
       <CharacterEditorModal
         isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        character={activeCharacter}
+        onClose={() => {
+          setIsEditOpen(false);
+          setEditingCharacter(null);
+        }}
+        character={editingCharacter || activeCharacter}
         onSave={handleUpdateActiveCharacter}
       />
     </div>

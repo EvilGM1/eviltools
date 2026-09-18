@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, Shield, Hammer, BookOpen, Plus, Trash2, Coins, Sparkles } from 'lucide-react';
 import { RANK_NAMES, wealthToCopper, copperToWealth } from '../services/characterImporter.js';
 
@@ -36,6 +36,35 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
   // Formulas
   const [formulas, setFormulas] = useState([...(character.formulas || [])]);
   const [newFormula, setNewFormula] = useState('');
+
+  // Sync state when character or modal visibility changes
+  useEffect(() => {
+    if (character && isOpen) {
+      setName(character.name || '');
+      setLevel(character.level || 1);
+      setCharacterClass(character.characterClass || 'Wizard');
+      setGp(character.wealth?.gp || 0);
+      setSp(character.wealth?.sp || 0);
+      setCp(character.wealth?.cp || 0);
+      setSkills({
+        crafting: { ...(character.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
+        arcana: { ...(character.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
+        nature: { ...(character.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
+        occultism: { ...(character.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
+        religion: { ...(character.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
+      });
+      setFeats({
+        magicalShorthand: !!character.feats?.magicalShorthand,
+        spellbookProdigy: !!character.feats?.spellbookProdigy,
+        magicalCrafting: !!character.feats?.magicalCrafting,
+        alchemicalCrafting: !!character.feats?.alchemicalCrafting,
+        snareCrafting: !!character.feats?.snareCrafting,
+        specialtyCrafting: !!character.feats?.specialtyCrafting
+      });
+      setFormulas([...(character.formulas || [])]);
+      setNewFormula('');
+    }
+  }, [character, isOpen]);
 
   const handleSkillChange = (skillKey, field, value) => {
     setSkills(prev => {

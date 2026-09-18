@@ -16,7 +16,8 @@ import {
   Layers,
   ChevronRight,
   ShieldAlert,
-  BookOpen
+  BookOpen,
+  FileText
 } from 'lucide-react';
 import itemsData from '../data/itemsCompendium.json';
 import spellsData from '../data/spellsCompendium.json';
@@ -539,6 +540,20 @@ export function CraftingSuite({
                   </p>
                 </div>
               </div>
+
+              {/* Item Description & Lore Card */}
+              {selectedItem.description && (
+                <div className="p-3.5 rounded-xl bg-parchment-50 border border-parchment-200 text-xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-serif font-bold text-arcane-950">
+                    <FileText className="w-4 h-4 text-forge-700" />
+                    <span>Item Description & Effects</span>
+                  </div>
+                  <div 
+                    className="text-stone-700 text-xs leading-relaxed max-h-48 overflow-y-auto pr-1 prose-sm prose-stone [&_p]:mb-1.5 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4"
+                    dangerouslySetInnerHTML={{ __html: selectedItem.description }}
+                  />
+                </div>
+              )}
 
               {/* Material Costs & Math Breakdown */}
               <div className="bg-gradient-to-br from-arcane-950 to-forge-950 p-4 rounded-xl text-parchment-100 border border-gold-600/50 space-y-3">

@@ -11,10 +11,11 @@ import {
   Trash2, 
   Zap, 
   Crown, 
-  ChevronRight,
-  Shield,
-  Layers,
-  BookMarked
+  ChevronRight, 
+  Shield, 
+  Layers, 
+  BookMarked,
+  FileText
 } from 'lucide-react';
 import spellsData from '../data/spellsCompendium.json';
 import { 
@@ -426,6 +427,20 @@ export function ScribeSuite({
                   <span className="text-[10px] text-parchment-500 block">Tradition: {selectedTradition}</span>
                 </div>
               </div>
+
+              {/* Spell Description & Rules Card */}
+              {selectedSpell.description && (
+                <div className="p-3.5 rounded-xl bg-purple-50/70 border border-purple-200 text-xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-serif font-bold text-arcane-950">
+                    <FileText className="w-4 h-4 text-purple-700" />
+                    <span>Spell Description & Rules</span>
+                  </div>
+                  <div 
+                    className="text-stone-700 text-xs leading-relaxed max-h-48 overflow-y-auto pr-1 prose-sm prose-stone [&_p]:mb-1.5 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_strong]:font-bold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4"
+                    dangerouslySetInnerHTML={{ __html: selectedSpell.description }}
+                  />
+                </div>
+              )}
 
               {/* Feats & Remaster Rules Active Indicators */}
               <div className="bg-gradient-to-br from-arcane-950 to-purple-950 p-4 rounded-xl text-parchment-100 border border-purple-500/50 space-y-2">

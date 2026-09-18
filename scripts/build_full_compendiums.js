@@ -6,7 +6,7 @@ const equipmentPath = 'C:/Users/hisas/.gemini/antigravity/brain/66a2a09a-40b3-4b
 const spellsPath = 'C:/Users/hisas/.gemini/antigravity/brain/66a2a09a-40b3-4b98-9728-c8034f3103ef/scratch/spells';
 
 async function extractCompendiums() {
-  console.log('--- Extracting Equipment Compendium ---');
+  console.log('--- Extracting Equipment Compendium with Descriptions ---');
   const eqDb = new ClassicLevel(equipmentPath, { valueEncoding: 'json' });
   await eqDb.open();
   
@@ -43,6 +43,7 @@ async function extractCompendiums() {
     const type = doc.type || 'equipment';
     const isWand = traits.includes('wand') || doc.name.toLowerCase().includes('magic wand');
     const isScroll = traits.includes('scroll') || doc.name.toLowerCase().includes('scroll of');
+    const description = sys.description?.value || '';
 
     return {
       id: doc._id || `item-${Date.now()}-${Math.random()}`,
@@ -53,6 +54,7 @@ async function extractCompendiums() {
       type,
       category: isWand ? 'wand' : isScroll ? 'scroll' : type,
       traits: Array.isArray(traits) ? traits : [],
+      description,
       isWand,
       isScroll,
       spellRank: isWand || isScroll ? (level >= 3 ? Math.floor((level - 1) / 2) : 1) : null
@@ -66,7 +68,7 @@ async function extractCompendiums() {
   fs.writeFileSync(itemsOutPath, JSON.stringify(items, null, 2), 'utf-8');
   console.log(`Wrote ${items.length} items to ${itemsOutPath}`);
 
-  console.log('\n--- Extracting Spells Compendium ---');
+  console.log('\n--- Extracting Spells Compendium with Descriptions ---');
   const spDb = new ClassicLevel(spellsPath, { valueEncoding: 'json' });
   await spDb.open();
   
@@ -85,6 +87,7 @@ async function extractCompendiums() {
     const traditions = sys.traits?.traditions || [];
     const rarity = sys.traits?.rarity || sys.rarity?.value || sys.rarity || 'common';
     const rank = Number(sys.level?.value ?? sys.rank?.value ?? sys.level ?? 1);
+    const description = sys.description?.value || '';
 
     return {
       id: doc._id || `spell-${Date.now()}-${Math.random()}`,
@@ -92,7 +95,8 @@ async function extractCompendiums() {
       rank,
       traditions: Array.isArray(traditions) ? traditions.map(t => t.toLowerCase()) : ['arcane'],
       rarity: String(rarity).toLowerCase(),
-      traits: Array.isArray(traits) ? traits : []
+      traits: Array.isArray(traits) ? traits : [],
+      description
     };
   });
 
@@ -101,33 +105,6 @@ async function extractCompendiums() {
   const spellsOutPath = path.resolve('./src/data/spellsCompendium.json');
   fs.writeFileSync(spellsOutPath, JSON.stringify(spells, null, 2), 'utf-8');
   console.log(`Wrote ${spells.length} spells to ${spellsOutPath}`);
-
-  // Test Sylor's formulas matching against the new items catalog!
-  const sylorFormulas = [
-    "Reading Ring", "Traveling Companion's Chair", "Traveler's Chair", "Olfactory Stimulators", 
-    "Magical Prosthetic Eye", "Magical Hearing Aid", "Impulse Control", "Guide Harness", 
-    "Cantrip Deck (full pack)", "Cloak of Feline Rest", "Ring of Discretion", "Ring of Sigils", 
-    "Versatile Tinderbox", "Memoir Map", "Mortal Chronicle", "Navigator's Star", "Eye Slash", 
-    "Predictable Silver Piece", "Everlight Crystal", "Purifying Spoon (Tablespoon)", 
-    "Weapon Striking", "Armor Potency +1", "Weapon Potency +1", "Reinforcing (Minor)", "Ghost Touch"
-  ];
-
-  console.log('\n--- Checking Sylor 25 Formulas Matches ---');
-  let matchedCount = 0;
-  for (const form of sylorFormulas) {
-    const fClean = form.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const found = items.filter(it => {
-      const itClean = it.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-      return itClean === fClean || itClean.includes(fClean) || fClean.includes(itClean);
-    });
-    if (found.length > 0) {
-      matchedCount++;
-      console.log(`✓ "${form}" matched: ${found.map(i => i.name).slice(0, 2).join(', ')}`);
-    } else {
-      console.log(`✗ "${form}" NOT FOUND`);
-    }
-  }
-  console.log(`\nTotal matched: ${matchedCount} / ${sylorFormulas.length}`);
 }
 
 extractCompendiums().catch(console.error);
