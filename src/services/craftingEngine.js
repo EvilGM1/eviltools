@@ -55,11 +55,13 @@ export function calculateCraftingDC(level = 0, rarity = 'common') {
 
 /**
  * Gets daily reduction rate in copper
+ * Critical Success uses the Earn Income value for level + 1 (Remaster Crafting rules)
  */
-export function getDailyEarnIncomeRate(level = 1, rank = 1) {
-  const safeLevel = Math.max(0, Math.min(20, Number(level) || 0));
+export function getDailyEarnIncomeRate(level = 1, rank = 1, isCrit = false) {
+  const baseLevel = Number(level) || 0;
+  const effectiveLevel = isCrit ? Math.min(20, baseLevel + 1) : Math.max(0, Math.min(20, baseLevel));
   const safeRank = Math.max(0, Math.min(4, Number(rank) || 0));
-  const row = EARN_INCOME_TABLE[safeLevel] || EARN_INCOME_TABLE[0];
+  const row = EARN_INCOME_TABLE[effectiveLevel] || EARN_INCOME_TABLE[0];
   return row[safeRank] || 5;
 }
 

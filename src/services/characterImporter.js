@@ -145,6 +145,12 @@ function parsePathbuilderJSON(b) {
     magicalShorthand: hasFeat('Magical Shorthand'),
     spellbookProdigy: hasFeat('Spellbook Prodigy'),
     specialtyCrafting: hasFeat('Specialty Crafting'),
+    impeccableCrafting: hasFeat('Impeccable Crafting'),
+    craftAnything: hasFeat('Craft Anything'),
+    inventor: hasFeat('Inventor'),
+    communalCrafting: hasFeat('Communal Crafting'),
+    signatureCrafting: hasFeat('Signature Crafting'),
+    magicalScrounger: hasFeat('Magical Scrounger'),
     craftersAppraisal: hasFeat("Crafter's Appraisal"),
     allFeatNames
   };
@@ -274,6 +280,12 @@ function parseFoundryPF2eJSON(f) {
     magicalShorthand: hasFeat('Magical Shorthand'),
     spellbookProdigy: hasFeat('Spellbook Prodigy'),
     specialtyCrafting: hasFeat('Specialty Crafting'),
+    impeccableCrafting: hasFeat('Impeccable Crafting'),
+    craftAnything: hasFeat('Craft Anything'),
+    inventor: hasFeat('Inventor'),
+    communalCrafting: hasFeat('Communal Crafting'),
+    signatureCrafting: hasFeat('Signature Crafting'),
+    magicalScrounger: hasFeat('Magical Scrounger'),
     craftersAppraisal: hasFeat("Crafter's Appraisal"),
     allFeatNames
   };

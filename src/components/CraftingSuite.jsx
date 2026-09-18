@@ -123,6 +123,13 @@ export function CraftingSuite({
   const crafterLevel = character?.level ?? 1;
   const dailyReductionCopper = getDailyEarnIncomeRate(crafterLevel, crafterRank);
 
+  // Specialty Crafting active job toggle
+  const [specialtyApplied, setSpecialtyApplied] = useState(false);
+  const hasSpecialtyFeat = !!character?.feats?.specialtyCrafting;
+  const hasImpeccableFeat = !!character?.feats?.impeccableCrafting;
+  const specialtyBonus = specialtyApplied ? (crafterRank >= 3 ? 2 : (crafterRank >= 1 ? 1 : 0)) : 0;
+  const isImpeccableActive = specialtyApplied && hasImpeccableFeat;
+
   // Available spells for wand/scroll imbuing
   const availableImbueSpells = useMemo(() => {
     if (!selectedItem?.isWand && !selectedItem?.isScroll) return [];
@@ -156,6 +163,7 @@ export function CraftingSuite({
   // Apply check result
   const handleApplyDiceResult = (rollResult) => {
     const isSuccess = rollResult.finalDegree === 'success' || rollResult.finalDegree === 'criticalSuccess';
+    const isCrit = rollResult.finalDegree === 'criticalSuccess';
     const characterCopper = wealthToCopper(character.wealth);
 
     if (activeCheckTarget === 'instant') {
@@ -178,8 +186,8 @@ export function CraftingSuite({
           quantity: batchQuantity,
           date: new Date().toLocaleDateString(),
           costPaid: formatWealth(copperToWealth(totalPriceCopper)),
-          goldSaved: '0 gp (Instant Rush)',
-          status: 'Completed (Rush)',
+          goldSaved: isCrit ? 'Critical Craft Mastery' : '0 gp (Instant Rush)',
+          status: isCrit ? 'Completed (Critical Rush)' : 'Completed (Rush)',
           degree: rollResult.finalDegree
         };
         onUpdateHistory([newLog, ...craftHistory]);
@@ -204,6 +212,9 @@ export function CraftingSuite({
           ? `${selectedItem.name} (${selectedImbuedSpell})`
           : selectedItem.name;
 
+        // Critical success Earn Income rate uses level + 1 (Remaster rules)
+        const projectDailyRate = getDailyEarnIncomeRate(crafterLevel, crafterRank, isCrit);
+
         const newProject = {
           id: `proj-${Date.now()}`,
           itemName: displayName,
@@ -214,9 +225,10 @@ export function CraftingSuite({
           rawMaterialsCopper,
           remainingBalanceCopper: remainingCostCopper,
           daysWorked: 0,
-          dailyReductionCopper,
+          dailyReductionCopper: projectDailyRate,
           accumulatedSavingsCopper: 0,
           degree: rollResult.finalDegree,
+          specialtyApplied,
           dateStarted: new Date().toLocaleDateString()
         };
         onUpdateProjects([newProject, ...downtimeProjects]);
@@ -554,6 +566,41 @@ export function CraftingSuite({
                 </div>
               </div>
 
+              {/* Specialty Crafting & Trade Match Toggle */}
+              <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-300 flex items-center justify-between gap-3 text-xs">
+                <label className="flex items-start gap-2.5 cursor-pointer flex-1">
+                  <input
+                    type="checkbox"
+                    checked={specialtyApplied}
+                    onChange={(e) => setSpecialtyApplied(e.target.checked)}
+                    className="mt-0.5 rounded text-amber-600 focus:ring-amber-500 w-4 h-4"
+                  />
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-stone-900">Apply Specialty Crafting</span>
+                      {hasSpecialtyFeat && (
+                        <span className="px-1.5 py-0.2 rounded bg-amber-200 text-amber-900 font-bold text-[10px] border border-amber-400">
+                          Feat Trained
+                        </span>
+                      )}
+                      {hasImpeccableFeat && (
+                        <span className="px-1.5 py-0.2 rounded bg-gold-200 text-gold-950 font-bold text-[10px] border border-gold-400">
+                          Impeccable (Success &rarr; Crit)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-stone-600 mt-0.5 text-[11px] leading-tight">
+                      Check if this item belongs to your trade specialty (e.g. blacksmithing, alchemy, woodworking). Applies <strong>+{crafterRank >= 3 ? 2 : (crafterRank >= 1 ? 1 : 0)} circumstance bonus</strong> to the Crafting check.
+                    </p>
+                  </div>
+                </label>
+                {specialtyApplied && (
+                  <span className="font-mono font-bold text-amber-800 bg-amber-100 border border-amber-400 px-2.5 py-1 rounded-lg shrink-0 text-xs">
+                    +{crafterRank >= 3 ? 2 : (crafterRank >= 1 ? 1 : 0)} Bonus
+                  </span>
+                )}
+              </div>
+
               {/* Item Description & Lore Card */}
               {itemDescription && (
                 <div className="p-3.5 rounded-xl bg-parchment-50 border border-parchment-200 text-xs space-y-1.5">
@@ -857,9 +904,12 @@ export function CraftingSuite({
         isOpen={diceModalOpen}
         onClose={() => setDiceModalOpen(false)}
         title={`Crafting Check: ${selectedItem?.name}`}
-        subtitle={`Level ${itemLevel} ${itemRarity} Item • DC ${targetDC}`}
+        subtitle={`Level ${itemLevel} ${itemRarity} Item • DC ${targetDC}${specialtyBonus > 0 ? ` • +${specialtyBonus} Specialty Bonus` : ''}`}
         skillName="Crafting"
         skillMod={crafterMod}
+        circumstanceBonus={specialtyBonus}
+        isSpecialtyActive={specialtyApplied}
+        impeccableCraftingActive={isImpeccableActive}
         targetDC={targetDC}
         mode="craft"
         character={character}

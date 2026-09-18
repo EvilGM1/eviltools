@@ -95,7 +95,11 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     magicalCrafting: !!character.feats?.magicalCrafting,
     alchemicalCrafting: !!character.feats?.alchemicalCrafting,
     snareCrafting: !!character.feats?.snareCrafting,
-    specialtyCrafting: !!character.feats?.specialtyCrafting
+    specialtyCrafting: !!character.feats?.specialtyCrafting,
+    impeccableCrafting: !!character.feats?.impeccableCrafting,
+    craftAnything: !!character.feats?.craftAnything,
+    inventor: !!character.feats?.inventor,
+    communalCrafting: !!character.feats?.communalCrafting
   });
 
   // Formulas
@@ -184,7 +188,11 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
         magicalCrafting: !!character.feats?.magicalCrafting,
         alchemicalCrafting: !!character.feats?.alchemicalCrafting,
         snareCrafting: !!character.feats?.snareCrafting,
-        specialtyCrafting: !!character.feats?.specialtyCrafting
+        specialtyCrafting: !!character.feats?.specialtyCrafting,
+        impeccableCrafting: !!character.feats?.impeccableCrafting,
+        craftAnything: !!character.feats?.craftAnything,
+        inventor: !!character.feats?.inventor,
+        communalCrafting: !!character.feats?.communalCrafting
       });
 
       setFormulas([...(character.formulas || [])]);
@@ -614,6 +622,84 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
                 <div>
                   <span className="font-bold text-stone-900">Alchemical Crafting</span>
                   <p className="text-[11px] text-parchment-600">Allows crafting alchemical items, elixirs, and bombs</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.specialtyCrafting}
+                  onChange={(e) => setFeats({ ...feats, specialtyCrafting: e.target.checked })}
+                  className="rounded text-amber-600 focus:ring-gold-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Specialty Crafting</span>
+                  <p className="text-[11px] text-parchment-600">+1 / +2 circumstance bonus on specialty crafting jobs</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.impeccableCrafting}
+                  onChange={(e) => setFeats({ ...feats, impeccableCrafting: e.target.checked })}
+                  className="rounded text-gold-600 focus:ring-gold-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Impeccable Crafting (Master)</span>
+                  <p className="text-[11px] text-parchment-600">Successes on specialty craft become Critical Successes</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.craftAnything}
+                  onChange={(e) => setFeats({ ...feats, craftAnything: e.target.checked })}
+                  className="rounded text-purple-600 focus:ring-gold-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Craft Anything (Legendary)</span>
+                  <p className="text-[11px] text-parchment-600">Ignore special requirements like casting required spells</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.snareCrafting}
+                  onChange={(e) => setFeats({ ...feats, snareCrafting: e.target.checked })}
+                  className="rounded text-stone-600 focus:ring-gold-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Snare Crafting</span>
+                  <p className="text-[11px] text-parchment-600">Allows crafting complex snares and traps</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.inventor}
+                  onChange={(e) => setFeats({ ...feats, inventor: e.target.checked })}
+                  className="rounded text-cyan-600 focus:ring-gold-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Inventor</span>
+                  <p className="text-[11px] text-parchment-600">Create new formulas for items without buying them</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.communalCrafting}
+                  onChange={(e) => setFeats({ ...feats, communalCrafting: e.target.checked })}
+                  className="rounded text-blue-600 focus:ring-gold-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Communal Crafting</span>
+                  <p className="text-[11px] text-parchment-600">Allies can aid in downtime reduction</p>
                 </div>
               </label>
             </div>

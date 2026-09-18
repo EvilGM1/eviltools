@@ -24,7 +24,8 @@ import {
   calculateScribingTime, 
   TRADITION_SKILLS, 
   TRADITION_LABELS,
-  SKILL_LABELS
+  SKILL_LABELS,
+  SCROLL_MARKET_PRICES
 } from '../services/scribeEngine.js';
 import { copperToWealth, wealthToCopper, formatWealth } from '../services/characterImporter.js';
 import { DiceRollerModal } from './DiceRollerModal.jsx';
@@ -35,6 +36,59 @@ export function ScribeSuite({
   scribeHistory = [],
   onUpdateHistory
 }) {
+  // Determine caster archetype from character class
+  const rawClass = (character?.characterClass || 'Wizard').toLowerCase();
+  
+  let casterType = 'wizard'; // 'wizard', 'witch', 'magus', 'prepared_full', 'spontaneous', 'necromancer', 'archetype'
+  let casterTypeLabel = 'Prepared (Spellbook)';
+  let grimoireTitle = 'Spellbook';
+  let learnActionLabel = 'Roll Learn a Spell (Scribe into Spellbook)';
+  let outcomeDesc = 'In your spellbook. Ready to prepare tomorrow.';
+
+  if (rawClass.includes('witch')) {
+    casterType = 'witch';
+    casterTypeLabel = 'Prepared (Familiar Grimoire)';
+    grimoireTitle = 'Familiar Grimoire';
+    learnActionLabel = 'Roll Learn a Spell (Teach to Familiar)';
+    outcomeDesc = 'Taught to familiar. Ready to prepare tomorrow.';
+  } else if (rawClass.includes('magus')) {
+    casterType = 'magus';
+    casterTypeLabel = 'Bounded Prepared (Spellbook)';
+    grimoireTitle = 'Magus Spellbook';
+    learnActionLabel = 'Roll Learn a Spell (Scribe into Spellbook)';
+    outcomeDesc = 'In your spellbook. Ready to prepare in available slots tomorrow.';
+  } else if (rawClass.includes('cleric') || rawClass.includes('druid') || rawClass.includes('animist')) {
+    casterType = 'prepared_full';
+    casterTypeLabel = 'Prepared (Full List)';
+    grimoireTitle = 'Tradition Prepared Access (Uncommon/Rare)';
+    learnActionLabel = 'Roll Learn a Spell (Add to Tradition List)';
+    outcomeDesc = 'Permanently joins your tradition list. Ready to prepare tomorrow.';
+  } else if (rawClass.includes('bard') || rawClass.includes('sorcerer') || rawClass.includes('oracle') || rawClass.includes('psychic') || rawClass.includes('summoner')) {
+    casterType = 'spontaneous';
+    casterTypeLabel = 'Spontaneous Repertoire';
+    grimoireTitle = 'Repertoire Eligibility Pool';
+    learnActionLabel = 'Roll Learn a Spell (Unlock for Repertoire)';
+    outcomeDesc = 'Unlocked! Eligible to choose on next level-up or spell swap / retraining.';
+  } else if (rawClass.includes('necromancer')) {
+    casterType = 'necromancer';
+    casterTypeLabel = 'Bounded Prepared (Dirge)';
+    grimoireTitle = 'Dirge Eligibility Pool';
+    learnActionLabel = 'Roll Learn a Spell (Unlock for Dirge)';
+    outcomeDesc = 'Unlocked! Eligible for one of your 2 Dirge spell picks on level-up.';
+  } else if (rawClass.includes('wizard')) {
+    casterType = 'wizard';
+    casterTypeLabel = 'Prepared (Spellbook)';
+    grimoireTitle = 'Wizard Spellbook';
+    learnActionLabel = 'Roll Learn a Spell (Scribe into Spellbook)';
+    outcomeDesc = 'In your spellbook. Ready to prepare tomorrow.';
+  } else {
+    casterType = 'archetype';
+    casterTypeLabel = 'Archetype Spellcasting';
+    grimoireTitle = 'Archetype Known Spells';
+    learnActionLabel = 'Roll Learn a Spell';
+    outcomeDesc = 'Learned for your archetype tradition.';
+  }
+
   // Determine primary tradition from character if available
   const initialTradition = character?.spellcasting?.traditions?.[0] || 'arcane';
   const [selectedTradition, setSelectedTradition] = useState(initialTradition);
@@ -206,6 +260,45 @@ export function ScribeSuite({
     }
   };
 
+  // Witch Familiar Feeding Action (1 Hour, 100% Guaranteed, consumes scroll without roll)
+  const handleFeedScrollToFamiliar = () => {
+    if (!selectedSpell) return;
+    const scrollPrice = SCROLL_MARKET_PRICES[spellRank] || 400;
+    const characterCopper = wealthToCopper(character.wealth);
+
+    if (characterCopper < scrollPrice) {
+      alert(`Insufficient funds for scroll! Needed: ${formatWealth(copperToWealth(scrollPrice))}, but you only have ${formatWealth(character.wealth)}.`);
+      return;
+    }
+
+    if (!window.confirm(`Feed a Scroll of ${selectedSpell.name} (${formatWealth(copperToWealth(scrollPrice))}) to your familiar? This takes 1 hour of downtime and is 100% GUARANTEED without rolling a check. The scroll is consumed.`)) {
+      return;
+    }
+
+    const updatedWealth = copperToWealth(characterCopper - scrollPrice);
+    const updatedLearned = Array.from(new Set([...(character.learnedSpells || []), selectedSpell.name]));
+
+    onUpdateCharacter({
+      ...character,
+      wealth: updatedWealth,
+      learnedSpells: updatedLearned
+    });
+
+    const newLog = {
+      id: `scribe-${Date.now()}`,
+      spellName: selectedSpell.name,
+      rank: spellRank,
+      tradition: selectedTradition,
+      date: new Date().toLocaleDateString(),
+      costPaid: formatWealth(copperToWealth(scrollPrice)),
+      goldSaved: '100% Guaranteed (No Check Needed)',
+      timeSpent: '1 hour (Familiar Meal)',
+      status: 'Success (Scroll Fed & Consumed)',
+      degree: 'success'
+    };
+    onUpdateHistory([newLog, ...scribeHistory]);
+  };
+
   const handleRemoveLearnedSpell = (spellNameToRemove) => {
     const updatedLearned = (character.learnedSpells || []).filter(s => s !== spellNameToRemove);
     const updatedEntries = (character?.spellcasting?.entries || []).map(entry => ({
@@ -235,11 +328,11 @@ export function ScribeSuite({
             <h2 className="text-xl sm:text-2xl font-serif font-black text-parchment-100 flex items-center gap-2">
               EvilScribe Grimoire
               <span className="text-xs font-sans px-2.5 py-0.5 rounded-full bg-purple-900 border border-purple-500 text-purple-300 font-bold">
-                Wizard & Witch
+                {casterTypeLabel}
               </span>
             </h2>
             <p className="text-xs text-parchment-400">
-              PF2e Remaster Spell Scribing & Familiar Learning Engine with Tradition Alignment
+              {character.name}&apos;s {grimoireTitle} • PF2e Remaster Spell Learning Engine
             </p>
           </div>
         </div>
@@ -407,12 +500,12 @@ export function ScribeSuite({
               
               {/* Target Spell Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-parchment-200">
-                <div>
+                <div className="space-y-1">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700">Target Spell</span>
                   <h3 className="text-xl font-serif font-black text-arcane-950 flex items-center gap-2">
                     {selectedSpell.name}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-900 font-bold border border-purple-300">
                       {spellRank === 0 ? 'Cantrip' : `Rank ${spellRank}`}
                     </span>
@@ -423,6 +516,11 @@ export function ScribeSuite({
                       {spellRarity}
                     </span>
                   </div>
+                  <div className="pt-1">
+                    <span className="text-[11px] font-semibold text-purple-900 bg-purple-100/90 px-2.5 py-1 rounded-lg border border-purple-300 inline-block">
+                      <strong>Target Outcome:</strong> {outcomeDesc}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Scribe DC Badge */}
@@ -431,6 +529,43 @@ export function ScribeSuite({
                   <span className="text-2xl font-mono font-black text-gold-300">DC {targetDC}</span>
                 </div>
               </div>
+
+              {/* Smart Remaster Rule Advisories for Specific Caster Types */}
+              {spellRarity === 'common' && casterType === 'prepared_full' && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-950 flex items-start gap-2.5">
+                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block text-amber-900">Common Spell — Already Prepared for Free</span>
+                    <p className="text-amber-800 mt-0.5 leading-relaxed text-[11px]">
+                      Under PF2e Remaster rules, Clerics, Druids, and Animists already prepare all Common spells in their tradition for free during daily preparations. Learn a Spell is only needed for <strong>Uncommon or Rare</strong> spells granted by your GM or deity.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {spellRarity === 'common' && casterType === 'spontaneous' && (
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-300 text-xs text-blue-950 flex items-start gap-2.5">
+                  <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block text-blue-900">Common Spell — Already Eligible on Level-Up</span>
+                    <p className="text-blue-800 mt-0.5 leading-relaxed text-[11px]">
+                      Spontaneous casters (Bards, Sorcerers, Oracles, Psychics, Summoners) already choose from all Common spells when leveling up or retraining. Scribing does not grant extra daily slots; it is only needed to unlock <strong>Uncommon or Rare</strong> spells for future swaps.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {spellRarity === 'common' && casterType === 'necromancer' && (
+                <div className="p-3 rounded-xl bg-purple-50 border border-purple-300 text-xs text-purple-950 flex items-start gap-2.5">
+                  <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block text-purple-900">Common Spell — Direct Dirge Pick</span>
+                    <p className="text-purple-800 mt-0.5 leading-relaxed text-[11px]">
+                      Necromancers add 2 spells directly into their Dirge on level-up. Scribing is only needed to make <strong>Uncommon or Rare</strong> occult spells eligible for your Dirge slots.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Learning Math & Scribing Requirements Breakdown */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -505,16 +640,38 @@ export function ScribeSuite({
                 </div>
               </div>
 
-              {/* Scribe Action Button */}
+              {/* Scribe Action Buttons */}
               <div>
-                <button
-                  type="button"
-                  onClick={() => setDiceModalOpen(true)}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-700 via-arcane-700 to-purple-800 hover:from-purple-600 hover:to-arcane-600 text-white font-serif font-bold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-98"
-                >
-                  <Sparkles className="w-5 h-5 text-gold-300" />
-                  <span>Roll Learn a Spell Check (+{skillData.mod} {skillLabel} vs DC {targetDC})</span>
-                </button>
+                {casterType === 'witch' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDiceModalOpen(true)}
+                      className="py-3 px-4 rounded-xl bg-gradient-to-r from-purple-700 via-arcane-700 to-purple-800 hover:from-purple-600 hover:to-arcane-600 text-white font-serif font-bold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-98"
+                    >
+                      <Sparkles className="w-4 h-4 text-gold-300" />
+                      <span>Roll Learn a Spell (+{skillData.mod} vs DC {targetDC})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleFeedScrollToFamiliar}
+                      className="py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-700 via-teal-800 to-emerald-800 hover:from-emerald-600 hover:to-teal-700 text-white font-serif font-bold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-98"
+                    >
+                      <BookOpen className="w-4 h-4 text-emerald-300" />
+                      <span>Feed Scroll to Familiar (1 Hr, Guaranteed)</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setDiceModalOpen(true)}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-700 via-arcane-700 to-purple-800 hover:from-purple-600 hover:to-arcane-600 text-white font-serif font-bold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-98"
+                  >
+                    <Sparkles className="w-5 h-5 text-gold-300" />
+                    <span>{learnActionLabel} (+{skillData.mod} {skillLabel} vs DC {targetDC})</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -525,7 +682,7 @@ export function ScribeSuite({
               <div className="flex items-center gap-2">
                 <BookMarked className="w-5 h-5 text-purple-800" />
                 <h3 className="font-serif font-bold text-base text-arcane-950">
-                  Grimoire / Familiar Memory ({allKnownSpells.length} spells)
+                  {character.name}&apos;s {grimoireTitle} ({allKnownSpells.length} spells)
                 </h3>
               </div>
             </div>

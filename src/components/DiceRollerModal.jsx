@@ -13,6 +13,9 @@ export function DiceRollerModal({
   targetDC,
   mode = 'craft', // 'craft' or 'scribe'
   character,
+  circumstanceBonus = 0,
+  isSpecialtyActive = false,
+  impeccableCraftingActive = false,
   onApplyResult
 }) {
   if (!isOpen) return null;
@@ -24,7 +27,8 @@ export function DiceRollerModal({
   const [adjustedDegree, setAdjustedDegree] = useState(null);
   const [featNotes, setFeatNotes] = useState([]);
 
-  const rollTotal = dieResult !== null ? dieResult + skillMod : null;
+  const totalMod = skillMod + circumstanceBonus;
+  const rollTotal = dieResult !== null ? dieResult + totalMod : null;
 
   const handleRoll = () => {
     setIsRolling(true);
@@ -59,13 +63,23 @@ export function DiceRollerModal({
   };
 
   const evaluateFinalResult = (d20) => {
-    const rawTotal = d20 + skillMod;
+    const rawTotal = d20 + totalMod;
     let baseDegree = evaluateDegree(rawTotal, d20, targetDC);
     let finalDegree = baseDegree;
     const notes = [];
 
+    if (circumstanceBonus > 0) {
+      notes.push(`Specialty Crafting: +${circumstanceBonus} circumstance bonus applied.`);
+    }
+
     // Feat evaluations
-    if (mode === 'scribe') {
+    if (mode === 'craft') {
+      // Impeccable Crafting: only active if Specialty Crafting is on for this job
+      if (impeccableCraftingActive && baseDegree === 'success') {
+        finalDegree = 'criticalSuccess';
+        notes.push('Impeccable Crafting: Success on specialty craft upgraded to Critical Success (faster/cheaper downtime rate)!');
+      }
+    } else if (mode === 'scribe') {
       // Spellbook Prodigy: Crit Fail -> Fail
       if (character?.feats?.spellbookProdigy && baseDegree === 'criticalFailure') {
         finalDegree = 'failure';
@@ -97,7 +111,9 @@ export function DiceRollerModal({
     if (onApplyResult) {
       onApplyResult({
         dieResult,
-        skillMod,
+        skillMod: totalMod,
+        baseSkillMod: skillMod,
+        circumstanceBonus,
         rollTotal,
         targetDC,
         rawDegree: degreeOfSuccess,
