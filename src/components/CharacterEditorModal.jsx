@@ -33,11 +33,11 @@ export const PF2E_CLASSES = [
 ];
 
 export const TRADITION_OPTIONS = [
-  { value: 'arcane', label: 'Arcane (Arcana)', desc: 'Wizards, Magi, Arcane Witches & Sorcerers' },
-  { value: 'occult', label: 'Occult (Occultism)', desc: 'Bards, Psychics, Occult Witches (The Duke) & Sorcerers' },
-  { value: 'divine', label: 'Divine (Religion)', desc: 'Clerics, Champions, Oracles, Divine Witches & Sorcerers' },
-  { value: 'primal', label: 'Primal (Nature)', desc: 'Druids, Primal Witches & Sorcerers' },
-  { value: 'none', label: 'None / Non-Caster', desc: 'Crafters & Martial Heroes (Crafting Only)' }
+  { value: 'arcane', label: 'Arcane (Arcana)', desc: 'Wizards (Spellbook), Magi, & Arcane Witches' },
+  { value: 'occult', label: 'Occult (Occultism)', desc: 'Occult Witches (The Duke / Familiar Grimoire)' },
+  { value: 'divine', label: 'Divine (Religion)', desc: 'Divine Witches (Familiar Grimoire)' },
+  { value: 'primal', label: 'Primal (Nature)', desc: 'Primal Witches (Familiar Grimoire)' },
+  { value: 'none', label: 'None / Non-Scribing', desc: 'Crafters, Martials & Spontaneous Casters (Sorcerer, Bard, etc.)' }
 ];
 
 export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {

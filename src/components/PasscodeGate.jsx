@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
 import { Lock, KeyRound, ShieldAlert, Sparkles, ArrowRight } from 'lucide-react';
 
-// Default Party Passcode (can also be customized by the owner)
-export const DEFAULT_PASSCODE = 'eviltacos';
+// SHA-256 hash of the default party passcode
+const DEFAULT_PASSCODE_HASH = 'c7d8ef5b420466a0c013a770e9cf07a0dd112593b97e664890dec8a404149179';
+
+async function computeSHA256(text) {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  } catch (e) {
+    return text;
+  }
+}
 
 export function PasscodeGate({ onUnlock }) {
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const cleanInput = passcode.trim().toLowerCase();
-    const savedCustomPass = localStorage.getItem('eviltools_custom_passcode');
-    const validPass = (savedCustomPass || DEFAULT_PASSCODE).toLowerCase();
+    const inputHash = await computeSHA256(cleanInput);
 
-    if (cleanInput === validPass || cleanInput === 'eviltacos' || cleanInput === 'evilgm' || cleanInput === 'evilgm1') {
+    if (inputHash === DEFAULT_PASSCODE_HASH) {
       localStorage.setItem('eviltools_auth_unlocked', 'true');
       onUnlock();
     } else {
