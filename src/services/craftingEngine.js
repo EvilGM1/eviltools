@@ -91,6 +91,15 @@ export function priceToCopper(priceStr = '0 gp') {
   return copper;
 }
 
+function cleanTokens(str) {
+  return str
+    .toLowerCase()
+    .replace(/[+()]/g, ' ')
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter(t => t.length > 0 && !['the', 'a', 'an', 'of', 'rune'].includes(t));
+}
+
 /**
  * Checks if item requires formula and whether crafter knows it
  */
@@ -99,10 +108,29 @@ export function checkHasFormula(item, character) {
   const formulas = character.formulas || [];
   const itemName = (item.name || '').toLowerCase().trim();
   const itemId = (item.id || '').toLowerCase().trim();
+  const itemTokens = cleanTokens(item.name || '');
 
   return formulas.some(f => {
     const fStr = String(f).toLowerCase().trim();
-    return fStr === itemName || fStr === itemId || itemName.includes(fStr) || fStr.includes(itemName);
+    if (fStr === itemName || fStr === itemId) return true;
+
+    const fTokens = cleanTokens(fStr);
+    if (fTokens.length === 0) return false;
+
+    // 1. All formula tokens match in item name
+    const allTokensMatch = fTokens.every(t => itemTokens.includes(t));
+    if (allTokensMatch) return true;
+
+    // 2. All item tokens match in formula tokens
+    const allItemTokensMatch = itemTokens.length >= 2 && itemTokens.every(t => fTokens.includes(t));
+    if (allItemTokensMatch) return true;
+
+    // 3. Single specific item token matches (e.g. "Striking" for "Weapon Striking")
+    if (itemTokens.length === 1 && fTokens.includes(itemTokens[0]) && !['potion', 'oil', 'scroll', 'wand', 'weapon', 'armor', 'shield', 'ring', 'cloak', 'deck'].includes(itemTokens[0])) {
+      return true;
+    }
+
+    return false;
   });
 }
 
