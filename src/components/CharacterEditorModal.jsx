@@ -35,6 +35,21 @@ export const PF2E_CLASSES = [
   'Custom'
 ];
 
+export const SPELLCASTER_CLASSES = [
+  'Animist',
+  'Bard',
+  'Cleric',
+  'Druid',
+  'Magus',
+  'Necromancer',
+  'Oracle',
+  'Psychic',
+  'Sorcerer',
+  'Summoner',
+  'Witch',
+  'Wizard'
+];
+
 export const TRADITION_OPTIONS = [
   { value: 'arcane', label: 'Arcane (Arcana)', desc: 'Wizards (Spellbook), Magi, & Arcane Witches' },
   { value: 'occult', label: 'Occult (Occultism)', desc: 'Occult Witches (The Duke / Familiar Grimoire)' },
@@ -56,6 +71,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
 
   // Spellcasting Tradition
   const [tradition, setTradition] = useState('arcane');
+  const [showArchetypeCasting, setShowArchetypeCasting] = useState(false);
 
   // Wealth
   const [pp, setPp] = useState(character.wealth?.pp || 0);
@@ -131,17 +147,22 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
 
       // Tradition detection
       const charTrad = character.spellcasting?.traditions?.[0];
+      const isCaster = SPELLCASTER_CLASSES.includes(parsed.cls);
+
       if (charTrad && ['arcane', 'occult', 'divine', 'primal'].includes(charTrad.toLowerCase())) {
         setTradition(charTrad.toLowerCase());
-      } else if (character.spellcasting?.traditions?.length === 0) {
+        setShowArchetypeCasting(!isCaster);
+      } else if (character.spellcasting?.traditions?.length === 0 || !isCaster) {
         setTradition('none');
+        setShowArchetypeCasting(false);
       } else {
         if (parsed.cls === 'Wizard' || parsed.cls === 'Magus') setTradition('arcane');
         else if (parsed.cls === 'Druid') setTradition('primal');
         else if (parsed.cls === 'Cleric' || parsed.cls === 'Champion' || parsed.cls === 'Oracle') setTradition('divine');
-        else if (parsed.cls === 'Bard' || parsed.cls === 'Psychic') setTradition('occult');
+        else if (parsed.cls === 'Bard' || parsed.cls === 'Psychic' || parsed.cls === 'Necromancer') setTradition('occult');
         else if (parsed.cls === 'Witch') setTradition('occult');
         else setTradition('arcane');
+        setShowArchetypeCasting(false);
       }
 
       setPp(character.wealth?.pp || 0);
@@ -174,22 +195,29 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
   // Handle Class change auto-suggestions
   const handleClassChange = (newCls) => {
     setSelectedClass(newCls);
-    if (newCls === 'Wizard' || newCls === 'Magus') setTradition('arcane');
-    else if (newCls === 'Druid') setTradition('primal');
-    else if (newCls === 'Cleric' || newCls === 'Champion' || newCls === 'Oracle') setTradition('divine');
-    else if (newCls === 'Bard' || newCls === 'Psychic') setTradition('occult');
-    else if (newCls === 'Necromancer') setTradition('occult');
-    else if (newCls === 'Runesmith' || newCls === 'Alchemist' || newCls === 'Inventor') {
-      // Runesmith, Alchemist, Inventor are Crafting powerhouses
+    const isCaster = SPELLCASTER_CLASSES.includes(newCls);
+
+    if (newCls === 'Wizard' || newCls === 'Magus') {
+      setTradition('arcane');
+      setShowArchetypeCasting(false);
+    } else if (newCls === 'Druid') {
+      setTradition('primal');
+      setShowArchetypeCasting(false);
+    } else if (newCls === 'Cleric' || newCls === 'Champion' || newCls === 'Oracle') {
+      setTradition('divine');
+      setShowArchetypeCasting(false);
+    } else if (newCls === 'Bard' || newCls === 'Psychic' || newCls === 'Necromancer' || newCls === 'Witch') {
+      setTradition('occult');
+      setShowArchetypeCasting(false);
+    } else if (newCls === 'Runesmith' || newCls === 'Alchemist' || newCls === 'Inventor') {
       if (skills.crafting.rank === 0) {
         handleSkillChange('crafting', 'rank', 1);
       }
       setTradition('none');
-    }
-    else if (newCls === 'Fighter' || newCls === 'Gunslinger' || newCls === 'Guardian') {
-      if (skills.arcana.rank === 0 && skills.occultism.rank === 0 && skills.nature.rank === 0 && skills.religion.rank === 0) {
-        setTradition('none');
-      }
+      setShowArchetypeCasting(false);
+    } else {
+      setTradition('none');
+      setShowArchetypeCasting(false);
     }
   };
 
@@ -287,6 +315,8 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     onClose();
   };
 
+  const isBaseSpellcaster = SPELLCASTER_CLASSES.includes(selectedClass);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
       <div className="bg-parchment-50 border-2 border-gold-500 rounded-2xl max-w-3xl w-full p-6 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -378,35 +408,63 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
 
             {/* Spellcasting Tradition Selector */}
             <div className="pt-2 border-t border-parchment-200">
-              <label className="block text-xs font-bold text-purple-900 uppercase mb-1.5 flex items-center gap-1.5">
-                <Wand2 className="w-4 h-4 text-purple-700" />
-                <span>Spellcasting Tradition & Scribing Skill Alignment</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {TRADITION_OPTIONS.map(opt => (
-                  <label
-                    key={opt.value}
-                    className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
-                      tradition === opt.value
-                        ? 'bg-purple-100 border-purple-600 ring-2 ring-purple-400/40'
-                        : 'bg-parchment-50 border-parchment-200 hover:bg-parchment-100'
-                    }`}
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-purple-900 uppercase flex items-center gap-1.5">
+                  <Wand2 className="w-4 h-4 text-purple-700" />
+                  <span>Spellcasting Tradition & Scribing Skill Alignment</span>
+                </label>
+                {!isBaseSpellcaster && (showArchetypeCasting || tradition !== 'none') && (
+                  <button
+                    type="button"
+                    onClick={() => { setTradition('none'); setShowArchetypeCasting(false); }}
+                    className="text-[11px] text-stone-500 hover:text-red-700 font-semibold underline"
                   >
-                    <input
-                      type="radio"
-                      name="tradition"
-                      value={opt.value}
-                      checked={tradition === opt.value}
-                      onChange={(e) => setTradition(e.target.value)}
-                      className="mt-0.5 text-purple-600 focus:ring-purple-500"
-                    />
-                    <div>
-                      <span className="font-bold text-stone-900 block text-xs">{opt.label}</span>
-                      <span className="text-[11px] text-parchment-600 leading-tight block">{opt.desc}</span>
-                    </div>
-                  </label>
-                ))}
+                    Remove Archetype Tradition
+                  </button>
+                )}
               </div>
+
+              {!isBaseSpellcaster && tradition === 'none' && !showArchetypeCasting ? (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-parchment-100 border border-parchment-200">
+                  <div>
+                    <span className="text-xs font-bold text-stone-800 block">Non-Spellcaster (Crafting Focus)</span>
+                    <span className="text-[11px] text-stone-600">Pure martial or artisan class. No base scribing or spellbook required.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setShowArchetypeCasting(true); setTradition('arcane'); }}
+                    className="text-xs text-purple-800 hover:text-purple-950 font-bold bg-purple-50 hover:bg-purple-100 px-2.5 py-1.5 rounded-lg border border-purple-300 transition-colors shrink-0"
+                  >
+                    + Add Spellcasting Archetype (Dedication)
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {TRADITION_OPTIONS.map(opt => (
+                    <label
+                      key={opt.value}
+                      className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                        tradition === opt.value
+                          ? 'bg-purple-100 border-purple-600 ring-2 ring-purple-400/40'
+                          : 'bg-parchment-50 border-parchment-200 hover:bg-parchment-100'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="tradition"
+                        value={opt.value}
+                        checked={tradition === opt.value}
+                        onChange={(e) => setTradition(e.target.value)}
+                        className="mt-0.5 text-purple-600 focus:ring-purple-500"
+                      />
+                      <div>
+                        <span className="font-bold text-stone-900 block text-xs">{opt.label}</span>
+                        <span className="text-[11px] text-parchment-600 leading-tight block">{opt.desc}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
