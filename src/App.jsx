@@ -4,6 +4,7 @@ import { CraftingSuite } from './components/CraftingSuite.jsx';
 import { ScribeSuite } from './components/ScribeSuite.jsx';
 import { ImportModal } from './components/ImportModal.jsx';
 import { CharacterEditorModal } from './components/CharacterEditorModal.jsx';
+import { PasscodeGate } from './components/PasscodeGate.jsx';
 
 // Default Preset Characters (Gin - Wizard, The Duke - Occult Witch, Sylor - Runesmith)
 const DEFAULT_CHARACTERS = [
@@ -131,6 +132,21 @@ const DEFAULT_CHARACTERS = [
 ];
 
 export function App() {
+  const isLocalhost = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === ''
+  );
+
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    if (isLocalhost) return true;
+    try {
+      return localStorage.getItem('eviltools_auth_unlocked') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
   // Characters State with localStorage persistence
   const [characters, setCharacters] = useState(() => {
     try {
@@ -302,6 +318,10 @@ export function App() {
       }
     }
   };
+
+  if (!isUnlocked) {
+    return <PasscodeGate onUnlock={() => setIsUnlocked(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-parchment-100 text-stone-900 flex flex-col font-sans selection:bg-gold-500 selection:text-white">
