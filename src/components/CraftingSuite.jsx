@@ -38,8 +38,9 @@ export function CraftingSuite({
   onUpdateHistory
 }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [formulasOnly, setFormulasOnly] = useState(false);
+  const [craftableOnly, setCraftableOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [maxLevelFilter, setMaxLevelFilter] = useState(20);
   const [selectedItem, setSelectedItem] = useState(itemsData[0]);
   const [batchQuantity, setBatchQuantity] = useState(1);
   const [selectedImbuedSpell, setSelectedImbuedSpell] = useState('');
@@ -72,8 +73,11 @@ export function CraftingSuite({
     { id: 'held', label: 'Worn & Held' }
   ];
 
+  const knownFormulasCount = character?.formulas?.length || 0;
+
   // Filtered compendium items
   const filteredItems = useMemo(() => {
+    const charLevel = character?.level ?? 20;
     return itemsData.filter(item => {
       const matchesSearch = (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.traits || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -82,10 +86,11 @@ export function CraftingSuite({
         (selectedCategory === 'scroll' && item.isScroll) ||
         item.category === selectedCategory ||
         item.type === selectedCategory;
-      const matchesLevel = (item.level ?? 0) <= maxLevelFilter;
-      return matchesSearch && matchesCategory && matchesLevel;
+      const matchesLevel = !craftableOnly || (item.level ?? 0) <= charLevel;
+      const matchesFormula = !formulasOnly || checkHasFormula(item, character);
+      return matchesSearch && matchesCategory && matchesLevel && matchesFormula;
     });
-  }, [searchQuery, selectedCategory, maxLevelFilter]);
+  }, [searchQuery, selectedCategory, craftableOnly, formulasOnly, character]);
 
   // Crafting calculations for selected item
   const itemLevel = selectedItem?.level ?? 0;
@@ -344,8 +349,39 @@ export function CraftingSuite({
               />
             </div>
 
+            {/* Quick Toggle Filters: Known Formulas & Craftable Only */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setFormulasOnly(!formulasOnly)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  formulasOnly
+                    ? 'bg-emerald-800 text-white border-emerald-600 shadow-sm'
+                    : 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
+                }`}
+                title="Show only items you have in your known formula book"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Known Formulas Only ({knownFormulasCount})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCraftableOnly(!craftableOnly)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  craftableOnly
+                    ? 'bg-forge-800 text-white border-forge-600 shadow-sm'
+                    : 'bg-forge-50 text-forge-900 border-forge-300 hover:bg-forge-100'
+                }`}
+                title={`Show only items at or below your character level (${character?.level || 1})`}
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span>Craftable (&le; Lvl {character?.level || 1})</span>
+              </button>
+            </div>
+
             {/* Category Filter Pills */}
-            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1 pt-1 border-t border-parchment-200">
               {categories.map(cat => (
                 <button
                   key={cat.id}
