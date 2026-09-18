@@ -13,16 +13,19 @@ export const PF2E_CLASSES = [
   'Druid',
   'Exemplar',
   'Fighter',
+  'Guardian',
   'Gunslinger',
   'Inventor',
   'Investigator',
   'Kineticist',
   'Magus',
   'Monk',
+  'Necromancer',
   'Oracle',
   'Psychic',
   'Ranger',
   'Rogue',
+  'Runesmith',
   'Sorcerer',
   'Summoner',
   'Swashbuckler',
@@ -175,7 +178,15 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     else if (newCls === 'Druid') setTradition('primal');
     else if (newCls === 'Cleric' || newCls === 'Champion' || newCls === 'Oracle') setTradition('divine');
     else if (newCls === 'Bard' || newCls === 'Psychic') setTradition('occult');
-    else if (newCls === 'Alchemist' || newCls === 'Fighter' || newCls === 'Gunslinger' || newCls === 'Inventor') {
+    else if (newCls === 'Necromancer') setTradition('occult');
+    else if (newCls === 'Runesmith' || newCls === 'Alchemist' || newCls === 'Inventor') {
+      // Runesmith, Alchemist, Inventor are Crafting powerhouses
+      if (skills.crafting.rank === 0) {
+        handleSkillChange('crafting', 'rank', 1);
+      }
+      setTradition('none');
+    }
+    else if (newCls === 'Fighter' || newCls === 'Gunslinger' || newCls === 'Guardian') {
       if (skills.arcana.rank === 0 && skills.occultism.rank === 0 && skills.nature.rank === 0 && skills.religion.rank === 0) {
         setTradition('none');
       }
