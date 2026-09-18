@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Shield, Hammer, BookOpen, Plus, Trash2, Coins, Sparkles, Wand2 } from 'lucide-react';
-import { RANK_NAMES, wealthToCopper, copperToWealth } from '../services/characterImporter.js';
+import { X, Save, Shield, Hammer, BookOpen, Plus, Trash2, Coins, Sparkles, Wand2, Download } from 'lucide-react';
+import { RANK_NAMES, wealthToCopper, copperToWealth, exportCharacterJSON } from '../services/characterImporter.js';
 
 export const PF2E_CLASSES = [
   'Alchemist',
@@ -264,7 +264,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     setFormulas(formulas.filter((_, idx) => idx !== index));
   };
 
-  const handleSave = () => {
+  const buildUpdatedCharacter = () => {
     const finalClass = selectedClass === 'Custom'
       ? (customClass.trim() || 'Adventurer')
       : selectedClass;
@@ -295,7 +295,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
       });
     }
 
-    const updated = {
+    return {
       ...character,
       name: name.trim() || 'Hero',
       level: Math.max(1, Math.min(20, Number(level) || 1)),
@@ -318,9 +318,18 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
         entries: updatedEntries
       }
     };
+  };
 
+  const handleSave = () => {
+    const updated = buildUpdatedCharacter();
     onSave(updated);
     onClose();
+  };
+
+  const handleExport = () => {
+    const updated = buildUpdatedCharacter();
+    onSave(updated);
+    exportCharacterJSON(updated);
   };
 
   const isBaseSpellcaster = SPELLCASTER_CLASSES.includes(selectedClass);
@@ -755,22 +764,34 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
         </div>
 
         {/* Footer */}
-        <div className="pt-3 border-t border-parchment-300 flex justify-end gap-2">
+        <div className="pt-3 border-t border-parchment-300 flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-parchment-400 text-stone-700 hover:bg-parchment-200 font-semibold text-sm transition-colors"
+            onClick={handleExport}
+            title="Download this character as a JSON file"
+            className="px-3.5 py-2 rounded-xl bg-parchment-200 hover:bg-parchment-300 text-stone-800 border border-parchment-400 font-bold text-xs sm:text-sm transition-colors flex items-center gap-1.5"
           >
-            Cancel
+            <Download className="w-4 h-4 text-stone-600" />
+            <span>Export JSON</span>
           </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold-600 to-gold-500 hover:from-gold-500 hover:to-gold-400 text-arcane-950 font-bold text-sm shadow-md transition-all flex items-center gap-1.5"
-          >
-            <Save className="w-4 h-4" />
-            <span>Save Changes</span>
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border border-parchment-400 text-stone-700 hover:bg-parchment-200 font-semibold text-sm transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-gold-600 to-gold-500 hover:from-gold-500 hover:to-gold-400 text-arcane-950 font-bold text-sm shadow-md transition-all flex items-center gap-1.5"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save Changes</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

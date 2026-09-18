@@ -52,9 +52,122 @@ export function normalizeRank(rawRank = 0) {
 export const RANK_NAMES = ['Untrained', 'Trained', 'Expert', 'Master', 'Legendary'];
 
 /**
+ * Downloads data as a JSON file in the browser
+ */
+export function downloadJSON(data, filename = 'character.json') {
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Exports a single character to an EvilTools JSON file
+ */
+export function exportCharacterJSON(character, projects = [], craftHistory = [], scribeHistory = []) {
+  if (!character) return null;
+  const safeName = (character.name || 'Hero').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filename = `${safeName}_Lvl${character.level || 1}_EvilTools.json`;
+
+  const payload = {
+    schema: 'eviltools-character-v1',
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    character: {
+      ...character,
+      id: character.id || `char-${Date.now()}`
+    },
+    downtimeProjects: projects.filter(p => p.characterId ? p.characterId === character.id : true),
+    craftHistory,
+    scribeHistory
+  };
+
+  downloadJSON(payload, filename);
+  return payload;
+}
+
+/**
+ * Exports all characters & downtime records to a complete party backup JSON file
+ */
+export function exportRosterBackupJSON(characters = [], downtimeProjects = [], craftHistory = [], scribeHistory = []) {
+  const filename = `EvilTools_PartyBackup_${new Date().toISOString().slice(0, 10)}.json`;
+
+  const payload = {
+    schema: 'eviltools-roster-v1',
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    characters,
+    downtimeProjects,
+    craftHistory,
+    scribeHistory
+  };
+
+  downloadJSON(payload, filename);
+  return payload;
+}
+
+/**
+ * Parses native EvilTools Character format
+ */
+function parseEvilToolsCharacter(char, root = {}) {
+  const pp = Number(char.wealth?.pp) || 0;
+  const gp = Number(char.wealth?.gp) || 0;
+  const sp = Number(char.wealth?.sp) || 0;
+  const cp = Number(char.wealth?.cp) || 0;
+  const totalCopper = pp * 1000 + gp * 100 + sp * 10 + cp;
+
+  return {
+    id: char.id || `char-eviltools-${Date.now()}`,
+    name: char.name || 'Hero',
+    level: Math.max(1, Math.min(20, Number(char.level) || 1)),
+    characterClass: char.characterClass || 'Adventurer',
+    source: 'eviltools',
+    avatar: char.avatar || '',
+    wealth: { pp, gp, sp, cp, totalCopper },
+    skills: {
+      crafting: { ...(char.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
+      arcana: { ...(char.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
+      nature: { ...(char.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
+      occultism: { ...(char.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
+      religion: { ...(char.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
+    },
+    feats: {
+      alchemicalCrafting: !!char.feats?.alchemicalCrafting,
+      magicalCrafting: !!char.feats?.magicalCrafting,
+      snareCrafting: !!char.feats?.snareCrafting,
+      magicalShorthand: !!char.feats?.magicalShorthand,
+      spellbookProdigy: !!char.feats?.spellbookProdigy,
+      specialtyCrafting: !!char.feats?.specialtyCrafting,
+      impeccableCrafting: !!char.feats?.impeccableCrafting,
+      craftAnything: !!char.feats?.craftAnything,
+      inventor: !!char.feats?.inventor,
+      communalCrafting: !!char.feats?.communalCrafting,
+      signatureCrafting: !!char.feats?.signatureCrafting,
+      magicalScrounger: !!char.feats?.magicalScrounger,
+      allFeatNames: char.feats?.allFeatNames || []
+    },
+    formulas: Array.isArray(char.formulas) ? [...char.formulas] : [],
+    learnedSpells: Array.isArray(char.learnedSpells) ? [...char.learnedSpells] : [],
+    spellcasting: {
+      traditions: Array.isArray(char.spellcasting?.traditions) ? [...char.spellcasting.traditions] : [],
+      entries: Array.isArray(char.spellcasting?.entries) ? [...char.spellcasting.entries] : []
+    },
+    importedProjects: root.downtimeProjects || [],
+    importedCraftHistory: root.craftHistory || [],
+    importedScribeHistory: root.scribeHistory || []
+  };
+}
+
+/**
  * Main parser entry point
  * @param {object|string} rawData 
- * @returns {object} Normalized Character Profile
+ * @returns {object} Normalized Character Profile or Roster
  */
 export function importCharacterJSON(rawData) {
   let json = rawData;
@@ -70,17 +183,38 @@ export function importCharacterJSON(rawData) {
     throw new Error('Empty or invalid character payload.');
   }
 
-  // 1. Pathbuilder 2e JSON
+  // 1. EvilTools Full Roster Backup
+  if (json.schema === 'eviltools-roster-v1' || (Array.isArray(json.characters) && json.characters.length > 0)) {
+    return {
+      isRoster: true,
+      characters: json.characters.map(c => parseEvilToolsCharacter(c)),
+      downtimeProjects: json.downtimeProjects || [],
+      craftHistory: json.craftHistory || [],
+      scribeHistory: json.scribeHistory || []
+    };
+  }
+
+  // 2. EvilTools Single Character export
+  if (json.schema === 'eviltools-character-v1' || json.character) {
+    return parseEvilToolsCharacter(json.character || json, json);
+  }
+
+  // 3. Direct EvilTools Character format
+  if (json.skills && json.name && json.wealth && json.skills.crafting) {
+    return parseEvilToolsCharacter(json);
+  }
+
+  // 4. Pathbuilder 2e JSON
   if (json.build) {
     return parsePathbuilderJSON(json.build);
   }
 
-  // 2. Foundry VTT PF2e JSON
+  // 5. Foundry VTT PF2e JSON
   if (json.system && (json.type === 'character' || json.name)) {
     return parseFoundryPF2eJSON(json);
   }
 
-  throw new Error('Unrecognized format. Please provide a valid Foundry PF2e Actor JSON or Pathbuilder 2e JSON file.');
+  throw new Error('Unrecognized format. Please provide a valid EvilTools, Pathbuilder 2e, or Foundry PF2e JSON file.');
 }
 
 /**

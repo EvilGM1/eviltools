@@ -3,6 +3,7 @@ import {
   Hammer, 
   BookOpen, 
   Upload, 
+  Download,
   Coins, 
   User, 
   Sparkles, 
@@ -22,6 +23,7 @@ export function Header({
   activeCharacterId, 
   setActiveCharacterId,
   onOpenImport,
+  onOpenExport,
   onOpenEdit,
   onOpenNew,
   onDeleteCharacter
@@ -86,6 +88,16 @@ export function Header({
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>Import JSON</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenExport}
+                title="Export Character or Full Party Data (JSON)"
+                className="px-2.5 py-1.5 rounded-lg bg-arcane-800 hover:bg-arcane-700 text-gold-300 hover:text-gold-200 border border-gold-600/60 font-bold text-xs flex items-center gap-1 shadow transition-all"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export JSON</span>
               </button>
 
               <button

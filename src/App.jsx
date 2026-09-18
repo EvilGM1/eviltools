@@ -3,6 +3,7 @@ import { Header } from './components/Header.jsx';
 import { CraftingSuite } from './components/CraftingSuite.jsx';
 import { ScribeSuite } from './components/ScribeSuite.jsx';
 import { ImportModal } from './components/ImportModal.jsx';
+import { ExportModal } from './components/ExportModal.jsx';
 import { CharacterEditorModal } from './components/CharacterEditorModal.jsx';
 import { PasscodeGate } from './components/PasscodeGate.jsx';
 
@@ -197,6 +198,7 @@ export function App() {
 
   // Modals state
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState(null);
 
@@ -230,9 +232,32 @@ export function App() {
     setCharacters(prev => prev.map(c => c.id === updated.id ? updated : c));
   };
 
-  const handleImportSuccess = (importedCharacter) => {
-    // Check if character already exists by name
-    const existingIdx = characters.findIndex(c => c.name.toLowerCase() === importedCharacter.name.toLowerCase());
+  const handleImportSuccess = (importedData) => {
+    // 1. Roster Backup Restore
+    if (importedData.isRoster) {
+      if (Array.isArray(importedData.characters) && importedData.characters.length > 0) {
+        setCharacters(importedData.characters);
+        setActiveCharacterId(importedData.characters[0].id);
+      }
+      if (Array.isArray(importedData.downtimeProjects)) {
+        setDowntimeProjects(importedData.downtimeProjects);
+      }
+      if (Array.isArray(importedData.craftHistory)) {
+        setCraftHistory(importedData.craftHistory);
+      }
+      if (Array.isArray(importedData.scribeHistory)) {
+        setScribeHistory(importedData.scribeHistory);
+      }
+      return;
+    }
+
+    // 2. Single Character Import
+    const importedCharacter = importedData;
+    const existingIdx = characters.findIndex(
+      c => (importedCharacter.id && c.id === importedCharacter.id) || 
+           c.name.toLowerCase() === importedCharacter.name.toLowerCase()
+    );
+
     if (existingIdx >= 0) {
       const updated = [...characters];
       updated[existingIdx] = { ...importedCharacter, id: characters[existingIdx].id };
@@ -241,6 +266,33 @@ export function App() {
     } else {
       setCharacters([importedCharacter, ...characters]);
       setActiveCharacterId(importedCharacter.id);
+    }
+
+    // Merge any bundled downtime projects
+    if (Array.isArray(importedCharacter.importedProjects) && importedCharacter.importedProjects.length > 0) {
+      setDowntimeProjects(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const newProjects = importedCharacter.importedProjects.filter(p => !existingIds.has(p.id));
+        return [...prev, ...newProjects];
+      });
+    }
+
+    // Merge any bundled craft history
+    if (Array.isArray(importedCharacter.importedCraftHistory) && importedCharacter.importedCraftHistory.length > 0) {
+      setCraftHistory(prev => {
+        const existingIds = new Set(prev.map(h => h.id));
+        const newHist = importedCharacter.importedCraftHistory.filter(h => !existingIds.has(h.id));
+        return [...prev, ...newHist];
+      });
+    }
+
+    // Merge any bundled scribe history
+    if (Array.isArray(importedCharacter.importedScribeHistory) && importedCharacter.importedScribeHistory.length > 0) {
+      setScribeHistory(prev => {
+        const existingIds = new Set(prev.map(h => h.id));
+        const newHist = importedCharacter.importedScribeHistory.filter(h => !existingIds.has(h.id));
+        return [...prev, ...newHist];
+      });
     }
   };
 
@@ -333,6 +385,7 @@ export function App() {
         activeCharacterId={activeCharacterId}
         setActiveCharacterId={setActiveCharacterId}
         onOpenImport={() => setIsImportOpen(true)}
+        onOpenExport={() => setIsExportOpen(true)}
         onOpenEdit={handleOpenEditModal}
         onOpenNew={handleCreateNewCharacter}
         onDeleteCharacter={handleDeleteCharacter}
@@ -378,6 +431,16 @@ export function App() {
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImportSuccess={handleImportSuccess}
+      />
+
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        character={activeCharacter}
+        characters={characters}
+        downtimeProjects={downtimeProjects}
+        craftHistory={craftHistory}
+        scribeHistory={scribeHistory}
       />
 
       <CharacterEditorModal
