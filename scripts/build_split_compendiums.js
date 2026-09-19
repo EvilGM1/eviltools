@@ -41,9 +41,21 @@ async function buildSplitCompendiums() {
     }
 
     const type = doc.type || 'equipment';
-    const isWand = traits.includes('wand') || doc.name.toLowerCase().includes('magic wand');
+    const isWand = traits.includes('wand') || doc.name.toLowerCase().includes('magic wand') || doc.name.toLowerCase().includes('wand of');
     const isScroll = traits.includes('scroll') || doc.name.toLowerCase().includes('scroll of');
     const id = doc._id;
+
+    let spellRank = null;
+    if (isScroll || isWand) {
+      const nameMatch = doc.name.match(/(\d+)(?:st|nd|rd|th)?-?(?:rank|level)/i);
+      if (nameMatch) {
+        spellRank = parseInt(nameMatch[1], 10);
+      } else if (isScroll) {
+        spellRank = Math.max(1, Math.min(10, Math.floor((level + 1) / 2)));
+      } else if (isWand) {
+        spellRank = Math.max(1, Math.min(9, Math.floor((level - 1) / 2)));
+      }
+    }
 
     itemsIndex.push({
       id,
@@ -56,7 +68,7 @@ async function buildSplitCompendiums() {
       traits: Array.isArray(traits) ? traits : [],
       isWand,
       isScroll,
-      spellRank: isWand || isScroll ? (level >= 3 ? Math.floor((level - 1) / 2) : 1) : null
+      spellRank
     });
 
     if (sys.description?.value) {
@@ -91,6 +103,8 @@ async function buildSplitCompendiums() {
     const traditions = sys.traits?.traditions || [];
     const rarity = sys.traits?.rarity || sys.rarity?.value || sys.rarity || 'common';
     const rank = Number(sys.level?.value ?? sys.rank?.value ?? sys.level ?? 1);
+    const rawCost = typeof sys.cost?.value === 'string' ? sys.cost.value : (typeof sys.cost === 'string' ? sys.cost : '');
+    const cost = rawCost.trim() || null;
     const id = doc._id;
 
     spellsIndex.push({
@@ -99,7 +113,8 @@ async function buildSplitCompendiums() {
       rank,
       traditions: Array.isArray(traditions) ? traditions.map(t => t.toLowerCase()) : ['arcane'],
       rarity: String(rarity).toLowerCase(),
-      traits: Array.isArray(traits) ? traits : []
+      traits: Array.isArray(traits) ? traits : [],
+      cost
     });
 
     if (sys.description?.value) {

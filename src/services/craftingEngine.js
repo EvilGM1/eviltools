@@ -161,3 +161,45 @@ export function evaluateDegree(rollTotal, dieResult, targetDC) {
 
   return degree;
 }
+
+/**
+ * Extracts / computes the material component cost in GP for spells with special cost entries
+ * E.g. Raise Dead (Rank 6: 200 gp * target lvl, Rank 7: 400 gp * target lvl, etc.)
+ */
+export function extractSpellCostGp(spell, targetLevel = 1) {
+  if (!spell || !spell.cost) return 0;
+  const costStr = spell.cost.toLowerCase();
+  
+  // Specific handler for Raise Dead
+  if (spell.name.toLowerCase() === 'raise dead') {
+    const rank = Number(spell.rank) || 6;
+    let multiplier = 200;
+    if (rank === 7) multiplier = 400;
+    else if (rank === 8) multiplier = 800;
+    else if (rank === 9) multiplier = 1600;
+    else if (rank === 10) multiplier = 3200;
+    return Math.max(1, Number(targetLevel) || 1) * multiplier;
+  }
+
+  // Multiplier formulas (e.g. '10 gp x the target's level', '20 gp × the target's level', '15 gp per spell rank')
+  const multMatch = costStr.match(/(\d+(?:,\d+)?)\s*gp\s*[×x*]\s*(?:the\s*)?(?:target|spell|caster|your|node|settlement|ritual)/i) ||
+                    costStr.match(/(?:target|spell|caster|your|node|settlement|ritual)[^0-9]*[×x*]\s*(\d+(?:,\d+)?)\s*gp/i);
+  if (multMatch) {
+    const unitGp = parseFloat(multMatch[1].replace(/,/g, ''));
+    return Math.max(1, Number(targetLevel) || 1) * unitGp;
+  }
+
+  // Check for simple flat gp: '(\d+) gp'
+  const flatMatch = costStr.match(/(\d+(?:,\d+)?)\s*gp/i);
+  if (flatMatch) {
+    return parseFloat(flatMatch[1].replace(/,/g, ''));
+  }
+
+  // Check for sp: '(\d+) sp'
+  const spMatch = costStr.match(/(\d+)\s*sp/i);
+  if (spMatch) {
+    return parseFloat(spMatch[1]) / 10;
+  }
+
+  return 0;
+}

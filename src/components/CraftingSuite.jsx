@@ -17,14 +17,16 @@ import {
   ChevronRight,
   ShieldAlert,
   BookOpen,
-  FileText
+  FileText,
+  Gem
 } from 'lucide-react';
 import { itemsIndex as itemsData, spellsIndex as spellsData, fetchItemDescription } from '../services/compendiumLoader.js';
 import { 
   calculateCraftingDC, 
   getDailyEarnIncomeRate, 
   priceToCopper, 
-  checkHasFormula 
+  checkHasFormula,
+  extractSpellCostGp
 } from '../services/craftingEngine.js';
 import { copperToWealth, wealthToCopper, formatWealth } from '../services/characterImporter.js';
 import { DiceRollerModal } from './DiceRollerModal.jsx';
@@ -45,6 +47,31 @@ export function CraftingSuite({
   const [itemDescription, setItemDescription] = useState('');
   const [batchQuantity, setBatchQuantity] = useState(1);
   const [selectedImbuedSpell, setSelectedImbuedSpell] = useState('');
+  const [spellTargetLevel, setSpellTargetLevel] = useState(1);
+  const [extraMaterialCostGp, setExtraMaterialCostGp] = useState(0);
+
+  // Selected spell object
+  const selectedSpellObj = useMemo(() => {
+    if (!selectedImbuedSpell) return null;
+    return spellsData.find(s => s.name === selectedImbuedSpell) || null;
+  }, [selectedImbuedSpell]);
+
+  // When selectedItem changes, reset imbued spell & extra cost
+  React.useEffect(() => {
+    setSelectedImbuedSpell('');
+    setExtraMaterialCostGp(0);
+    setSpellTargetLevel(1);
+  }, [selectedItem?.id]);
+
+  // When imbued spell or target level changes, automatically compute extra material cost
+  React.useEffect(() => {
+    if (selectedSpellObj?.cost) {
+      const computed = extractSpellCostGp(selectedSpellObj, spellTargetLevel);
+      setExtraMaterialCostGp(computed);
+    } else {
+      setExtraMaterialCostGp(0);
+    }
+  }, [selectedSpellObj, spellTargetLevel]);
   
   // Custom item creation state
   const [showCustomModal, setShowCustomModal] = useState(false);
@@ -112,10 +139,12 @@ export function CraftingSuite({
   const targetDC = calculateCraftingDC(itemLevel, itemRarity);
   const hasFormula = checkHasFormula(selectedItem, character);
 
-  const basePriceCopper = priceToCopper(selectedItem?.price || '0 gp');
-  const totalPriceCopper = basePriceCopper * batchQuantity;
-  const rawMaterialsCopper = Math.round(totalPriceCopper / 2);
-  const remainingCostCopper = totalPriceCopper - rawMaterialsCopper;
+  const baseItemPriceCopper = priceToCopper(selectedItem?.price || '0 gp');
+  const extraComponentCopper = Math.max(0, Math.round((Number(extraMaterialCostGp) || 0) * 100));
+  const totalItemPriceCopper = baseItemPriceCopper + extraComponentCopper;
+  const totalPriceCopper = totalItemPriceCopper * batchQuantity;
+  const rawMaterialsCopper = (Math.round(baseItemPriceCopper / 2) + extraComponentCopper) * batchQuantity;
+  const remainingCostCopper = (baseItemPriceCopper - Math.round(baseItemPriceCopper / 2)) * batchQuantity;
 
   // Crafter skill & reduction rate
   const crafterRank = character?.skills?.crafting?.rank ?? 1;
@@ -528,20 +557,76 @@ export function CraftingSuite({
 
                 {/* Wand / Scroll Imbuing Dropdown */}
                 {(selectedItem.isWand || selectedItem.isScroll) && (
-                  <div>
-                    <label className="block font-bold text-stone-800 mb-1">
-                      Imbue Spell (Rank {selectedItem.spellRank})
-                    </label>
-                    <select
-                      value={selectedImbuedSpell}
-                      onChange={(e) => setSelectedImbuedSpell(e.target.value)}
-                      className="w-full p-1.5 bg-white border border-parchment-300 rounded-lg font-semibold text-stone-800"
-                    >
-                      <option value="">Select a Rank {selectedItem.spellRank} Spell...</option>
-                      {availableImbueSpells.map(sp => (
-                        <option key={sp.id} value={sp.name}>{sp.name} ({sp.traditions?.join(', ')})</option>
-                      ))}
-                    </select>
+                  <div className="space-y-2.5">
+                    <div>
+                      <label className="block font-bold text-stone-800 mb-1">
+                        Imbue Spell (Rank {selectedItem.spellRank})
+                      </label>
+                      <select
+                        value={selectedImbuedSpell}
+                        onChange={(e) => setSelectedImbuedSpell(e.target.value)}
+                        className="w-full p-1.5 bg-white border border-parchment-300 rounded-lg font-semibold text-stone-800"
+                      >
+                        <option value="">Select a Rank {selectedItem.spellRank} Spell...</option>
+                        {availableImbueSpells.map(sp => (
+                          <option key={sp.id} value={sp.name}>
+                            {sp.name} ({sp.traditions?.join(', ') || 'arcane'}){sp.cost ? ' 💎 [Component Cost]' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Spell Material Component & Cost Configuration */}
+                    {selectedSpellObj && (selectedSpellObj.cost || extraComponentCopper > 0) && (
+                      <div className="p-3 bg-gold-100/80 border border-gold-400 rounded-xl space-y-2 text-xs animate-fadeIn shadow-sm">
+                        <div className="flex items-center gap-1.5 font-bold text-arcane-950">
+                          <Gem className="w-4 h-4 text-gold-700" />
+                          <span>Spell Material Component Required</span>
+                        </div>
+                        {selectedSpellObj.cost && (
+                          <p className="text-stone-700 italic bg-white/80 p-2 rounded border border-gold-300/70 leading-snug">
+                            &ldquo;{selectedSpellObj.cost}&rdquo;
+                          </p>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                          {/* If cost formula depends on target level */}
+                          {selectedSpellObj.cost && /(target|level|node|caster|settlement)/i.test(selectedSpellObj.cost) && (
+                            <div>
+                              <label className="block text-[11px] font-bold text-stone-700 mb-0.5">
+                                Target / Node Level:
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={spellTargetLevel}
+                                onChange={(e) => setSpellTargetLevel(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                className="w-full p-1.5 bg-white border border-gold-400 rounded font-bold text-center text-stone-900"
+                              />
+                            </div>
+                          )}
+                          <div className={selectedSpellObj.cost && /(target|level|node|caster|settlement)/i.test(selectedSpellObj.cost) ? '' : 'col-span-2'}>
+                            <label className="block text-[11px] font-bold text-stone-700 mb-0.5">
+                              Component Cost (GP per item):
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={extraMaterialCostGp}
+                                onChange={(e) => setExtraMaterialCostGp(Math.max(0, parseFloat(e.target.value) || 0))}
+                                className="w-full p-1.5 bg-white border border-gold-400 rounded font-bold text-stone-900"
+                              />
+                              <span className="font-bold text-gold-800">gp</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-stone-600 leading-tight">
+                          * 100% of the spell&apos;s physical cost is added directly to upfront raw materials and cannot be reduced by downtime.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -619,24 +704,35 @@ export function CraftingSuite({
               <div className="bg-gradient-to-br from-arcane-950 to-forge-950 p-4 rounded-xl text-parchment-100 border border-gold-600/50 space-y-3">
                 <div className="flex items-center justify-between text-xs font-serif font-bold text-gold-300 pb-2 border-b border-arcane-800">
                   <span>Crafting Cost & Economics</span>
-                  <span className="font-mono text-parchment-300">Batch Total: {formatWealth(copperToWealth(totalPriceCopper))}</span>
+                  <div className="text-right">
+                    <span className="font-mono text-parchment-200 text-xs sm:text-sm font-bold">
+                      Batch Total: {formatWealth(copperToWealth(totalPriceCopper))}
+                    </span>
+                    {extraComponentCopper > 0 && (
+                      <span className="block text-[10px] text-parchment-400 font-sans font-normal">
+                        ({formatWealth(copperToWealth(baseItemPriceCopper * batchQuantity))} base + {formatWealth(copperToWealth(extraComponentCopper * batchQuantity))} component)
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                   <div className="bg-arcane-900/80 p-2.5 rounded-lg border border-arcane-700">
-                    <span className="text-parchment-400 block">Upfront Materials (50%)</span>
+                    <span className="text-parchment-400 block text-[11px]">
+                      Upfront Materials {extraComponentCopper > 0 ? '(50% Base + Component)' : '(50%)'}
+                    </span>
                     <span className="font-mono text-sm font-bold text-gold-300">
                       {formatWealth(copperToWealth(rawMaterialsCopper))}
                     </span>
                   </div>
                   <div className="bg-arcane-900/80 p-2.5 rounded-lg border border-arcane-700">
-                    <span className="text-parchment-400 block">Remaining Half (50%)</span>
+                    <span className="text-parchment-400 block text-[11px]">Reducible Half (50% Base)</span>
                     <span className="font-mono text-sm font-bold text-parchment-200">
                       {formatWealth(copperToWealth(remainingCostCopper))}
                     </span>
                   </div>
                   <div className="bg-arcane-900/80 p-2.5 rounded-lg border border-arcane-700 col-span-2 sm:col-span-1">
-                    <span className="text-parchment-400 block">Daily Reduction Rate</span>
+                    <span className="text-parchment-400 block text-[11px]">Daily Reduction Rate</span>
                     <span className="font-mono text-sm font-bold text-emerald-400">
                       +{formatWealth(copperToWealth(dailyReductionCopper))}/day
                     </span>
