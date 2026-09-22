@@ -473,14 +473,19 @@ export function App() {
 
       {/* Footer */}
       <footer className="bg-arcane-950 text-parchment-400 border-t border-gold-600/40 py-4 px-4 text-center text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-gold-300">EvilTools Suite</span>
-            <span>&bull;</span>
-            <span>Pathfinder 2e Remaster Crafting, Scribing & Earn Income Engine</span>
+        <div className="max-w-7xl mx-auto flex flex-col gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-serif font-bold text-gold-300">EvilTools Suite</span>
+              <span>&bull;</span>
+              <span>Pathfinder 2e Remaster Crafting, Scribing & Earn Income Engine</span>
+            </div>
+            <div className="text-parchment-500 text-[11px]">
+              Compatible with Pathbuilder 2e & Foundry VTT PF2e JSON exports
+            </div>
           </div>
-          <div className="text-parchment-500 text-[11px]">
-            Compatible with Pathbuilder 2e & Foundry VTT PF2e JSON exports
+          <div className="text-[10px] text-parchment-500/80 leading-tight border-t border-arcane-800/80 pt-2">
+            This tool uses trademarks and/or copyrights owned by Paizo Inc., used under Paizo's Community Use Policy. We are expressly prohibited from charging you to use or access this content. Pathfinder 2e Remaster rules used under the ORC License.
           </div>
         </div>
       </footer>
