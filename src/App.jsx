@@ -3,6 +3,7 @@ import { Header } from './components/Header.jsx';
 import { CraftingSuite } from './components/CraftingSuite.jsx';
 import { ScribeSuite } from './components/ScribeSuite.jsx';
 import { EarningsSuite } from './components/EarningsSuite.jsx';
+import { EmporiumSuite } from './components/EmporiumSuite.jsx';
 import { ImportModal } from './components/ImportModal.jsx';
 import { ExportModal } from './components/ExportModal.jsx';
 import { CharacterEditorModal } from './components/CharacterEditorModal.jsx';
@@ -461,12 +462,17 @@ export function App() {
             scribeHistory={scribeHistory}
             onUpdateHistory={setScribeHistory}
           />
-        ) : (
+        ) : activeTab === 'earnings' ? (
           <EarningsSuite
             character={activeCharacter}
             onUpdateCharacter={handleUpdateActiveCharacter}
             earningsHistory={earningsHistory}
             onUpdateHistory={setEarningsHistory}
+          />
+        ) : (
+          <EmporiumSuite
+            character={activeCharacter}
+            onUpdateCharacter={handleUpdateActiveCharacter}
           />
         )}
       </main>

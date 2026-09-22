@@ -18,7 +18,8 @@ import {
   ShieldAlert,
   BookOpen,
   FileText,
-  Gem
+  Gem,
+  FastForward
 } from 'lucide-react';
 import { itemsIndex as itemsData, spellsIndex as spellsData, fetchItemDescription } from '../services/compendiumLoader.js';
 import { 
@@ -275,9 +276,16 @@ export function CraftingSuite({
     onUpdateProjects(downtimeProjects.map(proj => {
       if (proj.id !== projectId) return proj;
 
-      const newDays = proj.daysWorked + daysToAdd;
-      const additionalReduction = proj.dailyReductionCopper * daysToAdd;
-      const newSavings = Math.min(proj.remainingBalanceCopper, proj.accumulatedSavingsCopper + additionalReduction);
+      const currentSaved = proj.accumulatedSavingsCopper || 0;
+      const remainingToPay = Math.max(0, proj.remainingBalanceCopper - currentSaved);
+      if (remainingToPay <= 0) return proj;
+
+      const daysNeeded = proj.dailyReductionCopper > 0 ? Math.ceil(remainingToPay / proj.dailyReductionCopper) : 0;
+      const effectiveDays = daysNeeded > 0 ? Math.min(daysToAdd, daysNeeded) : daysToAdd;
+
+      const newDays = proj.daysWorked + effectiveDays;
+      const additionalReduction = proj.dailyReductionCopper * effectiveDays;
+      const newSavings = Math.min(proj.remainingBalanceCopper, currentSaved + additionalReduction);
       const newRemainingCost = Math.max(0, proj.remainingBalanceCopper - newSavings);
 
       return {
@@ -771,7 +779,7 @@ export function CraftingSuite({
                       <span>Downtime Project</span>
                     </div>
                     <p className="text-xs text-stone-600 mt-1">
-                      Pay 50% upfront ({formatWealth(copperToWealth(rawMaterialsCopper))}) and spend downtime days to reduce remaining cost to 0 gp.
+                      Pay 50% upfront ({formatWealth(copperToWealth(rawMaterialsCopper))}) and spend downtime days to reduce remaining cost to 0 gp{dailyReductionCopper > 0 && remainingCostCopper > 0 ? ` (approx. ${Math.ceil(remainingCostCopper / dailyReductionCopper)} days)` : ''}.
                     </p>
                   </div>
                   <button
@@ -802,6 +810,7 @@ export function CraftingSuite({
               const currentSaved = proj.accumulatedSavingsCopper || 0;
               const remainingToPay = Math.max(0, proj.remainingBalanceCopper - currentSaved);
               const progressPct = Math.min(100, Math.round((currentSaved / proj.remainingBalanceCopper) * 100)) || 0;
+              const daysToFree = proj.dailyReductionCopper > 0 ? Math.ceil(remainingToPay / proj.dailyReductionCopper) : 0;
 
               return (
                 <div key={proj.id} className="p-4 rounded-xl border-2 border-gold-400 bg-gradient-to-br from-parchment-50 to-white shadow-sm space-y-3">
@@ -814,6 +823,12 @@ export function CraftingSuite({
                         <span>Started: {proj.dateStarted}</span>
                         <span>&bull;</span>
                         <span className="font-semibold text-forge-800">{proj.daysWorked} Days Worked</span>
+                        {daysToFree > 0 && (
+                          <>
+                            <span>&bull;</span>
+                            <span className="text-stone-500 font-medium">({daysToFree}d until free)</span>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -829,7 +844,9 @@ export function CraftingSuite({
                   <div>
                     <div className="flex justify-between text-xs font-semibold text-stone-700 mb-1">
                       <span>Cost Reduction Progress</span>
-                      <span className="font-mono text-gold-800">Remaining to Finish: {formatWealth(copperToWealth(remainingToPay))}</span>
+                      <span className="font-mono text-gold-800">
+                        Remaining to Finish: {remainingToPay === 0 ? <span className="text-emerald-700 font-bold">0 cp (Free)</span> : formatWealth(copperToWealth(remainingToPay))}
+                      </span>
                     </div>
                     <div className="w-full bg-parchment-200 rounded-full h-2.5 overflow-hidden">
                       <div
@@ -839,22 +856,52 @@ export function CraftingSuite({
                     </div>
                   </div>
 
-                  {/* Downtime Actions: +1 Day, +7 Days, Finish Now, Cancel & Salvage */}
+                  {/* Downtime Actions: +1 Day, +7 Days, Max Days to Free, Cancel & Salvage, Complete Item */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-parchment-200">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <button
                         type="button"
+                        disabled={remainingToPay <= 0}
                         onClick={() => handleAdvanceDays(proj.id, 1)}
-                        className="px-2.5 py-1.5 rounded-lg bg-arcane-800 hover:bg-arcane-700 text-white font-bold text-xs transition-colors"
+                        className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-colors ${
+                          remainingToPay <= 0
+                            ? 'bg-parchment-200 text-parchment-400 cursor-not-allowed border border-parchment-300'
+                            : 'bg-arcane-800 hover:bg-arcane-700 text-white'
+                        }`}
+                        title={remainingToPay <= 0 ? 'Already free to finish' : 'Advance 1 day of crafting downtime'}
                       >
                         +1 Day
                       </button>
                       <button
                         type="button"
+                        disabled={remainingToPay <= 0}
                         onClick={() => handleAdvanceDays(proj.id, 7)}
-                        className="px-2.5 py-1.5 rounded-lg bg-arcane-800 hover:bg-arcane-700 text-white font-bold text-xs transition-colors"
+                        className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-colors ${
+                          remainingToPay <= 0
+                            ? 'bg-parchment-200 text-parchment-400 cursor-not-allowed border border-parchment-300'
+                            : 'bg-arcane-800 hover:bg-arcane-700 text-white'
+                        }`}
+                        title={remainingToPay <= 0 ? 'Already free to finish' : 'Advance 7 days of crafting downtime'}
                       >
                         +7 Days
+                      </button>
+                      <button
+                        type="button"
+                        disabled={daysToFree <= 0}
+                        onClick={() => handleAdvanceDays(proj.id, daysToFree)}
+                        className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-all flex items-center gap-1.5 ${
+                          daysToFree <= 0
+                            ? 'bg-parchment-200 text-parchment-400 cursor-not-allowed border border-parchment-300'
+                            : 'bg-gradient-to-r from-gold-600 to-gold-500 hover:from-gold-500 hover:to-gold-400 text-arcane-950 shadow-sm border border-gold-400 active:scale-95'
+                        }`}
+                        title={
+                          daysToFree > 0
+                            ? `Spend ${daysToFree} day${daysToFree > 1 ? 's' : ''} to reduce remaining cost to 0 gp`
+                            : 'Item is already free to finish'
+                        }
+                      >
+                        <FastForward className="w-3.5 h-3.5" />
+                        <span>Max Days to Free {daysToFree > 0 ? `(+${daysToFree}d)` : '(0d)'}</span>
                       </button>
                     </div>
 
@@ -872,7 +919,7 @@ export function CraftingSuite({
                         className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs shadow transition-all flex items-center gap-1"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
-                        <span>Complete Item ({formatWealth(copperToWealth(remainingToPay))})</span>
+                        <span>Complete Item ({remainingToPay === 0 ? 'Free' : formatWealth(copperToWealth(remainingToPay))})</span>
                       </button>
                     </div>
                   </div>

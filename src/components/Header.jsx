@@ -12,7 +12,8 @@ import {
   Trash2,
   CheckCircle2,
   Crown,
-  Zap
+  Zap,
+  Store
 } from 'lucide-react';
 import { formatWealth } from '../services/characterImporter.js';
 
@@ -209,6 +210,19 @@ export function Header({
           >
             <Coins className={`w-4 h-4 ${activeTab === 'earnings' ? 'text-emerald-600' : 'text-parchment-400'}`} />
             <span className="truncate">EvilEarnings (Earn Income)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('emporium')}
+            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
+              activeTab === 'emporium'
+                ? 'bg-parchment-100 text-amber-950 border-gold-500 shadow-lg'
+                : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
+            }`}
+          >
+            <Store className={`w-4 h-4 ${activeTab === 'emporium' ? 'text-amber-600' : 'text-parchment-400'}`} />
+            <span className="truncate">EvilEmporium (Merchant Generator)</span>
           </button>
         </div>
       </div>
