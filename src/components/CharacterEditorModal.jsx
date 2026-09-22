@@ -82,11 +82,18 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
   // Skills
   const [skills, setSkills] = useState({
     crafting: { ...(character.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
+    performance: { ...(character.skills?.performance || { rank: 0, mod: 0, rankName: 'Untrained' }) },
     arcana: { ...(character.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
     nature: { ...(character.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
     occultism: { ...(character.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
     religion: { ...(character.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
   });
+
+  // Lore Skills
+  const [loreSkills, setLoreSkills] = useState(Array.isArray(character.loreSkills) ? [...character.loreSkills] : []);
+  const [editorNewLoreName, setEditorNewLoreName] = useState('');
+  const [editorNewLoreRank, setEditorNewLoreRank] = useState(1);
+  const [editorNewLoreMod, setEditorNewLoreMod] = useState(5);
 
   // Feats
   const [feats, setFeats] = useState({
@@ -97,6 +104,8 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     snareCrafting: !!character.feats?.snareCrafting,
     specialtyCrafting: !!character.feats?.specialtyCrafting,
     impeccableCrafting: !!character.feats?.impeccableCrafting,
+    experiencedProfessional: !!character.feats?.experiencedProfessional,
+    virtuosicPerformer: !!character.feats?.virtuosicPerformer,
     craftAnything: !!character.feats?.craftAnything,
     inventor: !!character.feats?.inventor,
     communalCrafting: !!character.feats?.communalCrafting
@@ -176,11 +185,15 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
 
       setSkills({
         crafting: { ...(character.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
+        performance: { ...(character.skills?.performance || { rank: 0, mod: 0, rankName: 'Untrained' }) },
         arcana: { ...(character.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
         nature: { ...(character.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
         occultism: { ...(character.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
         religion: { ...(character.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
       });
+
+      setLoreSkills(Array.isArray(character.loreSkills) ? [...character.loreSkills] : []);
+      setEditorNewLoreName('');
 
       setFeats({
         magicalShorthand: !!character.feats?.magicalShorthand,
@@ -190,6 +203,8 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
         snareCrafting: !!character.feats?.snareCrafting,
         specialtyCrafting: !!character.feats?.specialtyCrafting,
         impeccableCrafting: !!character.feats?.impeccableCrafting,
+        experiencedProfessional: !!character.feats?.experiencedProfessional,
+        virtuosicPerformer: !!character.feats?.virtuosicPerformer,
         craftAnything: !!character.feats?.craftAnything,
         inventor: !!character.feats?.inventor,
         communalCrafting: !!character.feats?.communalCrafting
@@ -307,6 +322,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
         cp: Math.max(0, Number(cp) || 0)
       },
       skills,
+      loreSkills,
       feats: {
         ...character.feats,
         ...feats
@@ -575,6 +591,111 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
             </div>
           </div>
 
+          {/* Lore Skills Manager */}
+          <div className="bg-white p-3 rounded-xl border border-parchment-300 space-y-2">
+            <div className="flex items-center justify-between font-serif font-bold text-sm text-arcane-950">
+              <div className="flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4 text-emerald-600" />
+                <span>Lore Skills ({loreSkills.length})</span>
+              </div>
+              <span className="text-[11px] font-mono text-stone-500">Used for Downtime Earn Income</span>
+            </div>
+            
+            {/* Existing Lore Skills */}
+            <div className="space-y-1.5">
+              {loreSkills.map((lore, idx) => (
+                <div key={lore.id || idx} className="flex items-center justify-between gap-2 p-2 rounded bg-emerald-50/50 border border-emerald-200">
+                  <span className="font-bold text-stone-800 text-xs flex-1 truncate">{lore.name}</span>
+                  
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] text-stone-500">Rank:</label>
+                    <select
+                      value={lore.rank}
+                      onChange={(e) => {
+                        const newRank = Number(e.target.value);
+                        setLoreSkills(loreSkills.map((l, i) => i === idx ? { ...l, rank: newRank, rankName: RANK_NAMES[newRank] } : l));
+                      }}
+                      className="bg-white border border-parchment-300 rounded px-1.5 py-0.5 text-xs font-semibold text-stone-800"
+                    >
+                      <option value={1}>Trained</option>
+                      <option value={2}>Expert</option>
+                      <option value={3}>Master</option>
+                      <option value={4}>Legendary</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-[11px] text-stone-500">Mod:</label>
+                    <input
+                      type="number"
+                      value={lore.mod}
+                      onChange={(e) => {
+                        const newMod = Number(e.target.value);
+                        setLoreSkills(loreSkills.map((l, i) => i === idx ? { ...l, mod: newMod } : l));
+                      }}
+                      className="w-14 p-0.5 bg-white border border-parchment-300 rounded text-center font-bold text-xs text-stone-900"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setLoreSkills(loreSkills.filter((_, i) => i !== idx))}
+                    className="text-stone-400 hover:text-rose-600 p-1 rounded transition-colors"
+                    title="Delete Lore Skill"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Lore Row */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-parchment-200">
+              <input
+                type="text"
+                placeholder="New Lore (e.g. Sailing Lore)"
+                value={editorNewLoreName}
+                onChange={(e) => setEditorNewLoreName(e.target.value)}
+                className="flex-1 min-w-[140px] border border-parchment-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+              />
+              <select
+                value={editorNewLoreRank}
+                onChange={(e) => setEditorNewLoreRank(Number(e.target.value))}
+                className="border border-parchment-300 rounded-lg px-1.5 py-1 text-xs"
+              >
+                <option value={1}>Trained</option>
+                <option value={2}>Expert</option>
+                <option value={3}>Master</option>
+                <option value={4}>Legendary</option>
+              </select>
+              <input
+                type="number"
+                placeholder="Mod"
+                value={editorNewLoreMod}
+                onChange={(e) => setEditorNewLoreMod(Number(e.target.value))}
+                className="w-14 border border-parchment-300 rounded-lg px-1 py-1 text-xs text-center font-bold"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!editorNewLoreName.trim()) return;
+                  setLoreSkills([...loreSkills, {
+                    id: `lore-ed-${Date.now()}`,
+                    name: editorNewLoreName.trim(),
+                    rank: editorNewLoreRank,
+                    mod: editorNewLoreMod,
+                    rankName: RANK_NAMES[editorNewLoreRank]
+                  }]);
+                  setEditorNewLoreName('');
+                }}
+                className="px-2.5 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800 flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add</span>
+              </button>
+            </div>
+          </div>
+
           {/* Feats & Remaster Perks */}
           <div className="bg-white p-3 rounded-xl border border-parchment-300">
             <div className="flex items-center gap-1.5 mb-2 font-serif font-bold text-sm text-arcane-950">
@@ -582,6 +703,32 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
               <span>Feats & Remaster Perks</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.experiencedProfessional}
+                  onChange={(e) => setFeats({ ...feats, experiencedProfessional: e.target.checked })}
+                  className="rounded text-emerald-600 focus:ring-emerald-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Experienced Professional</span>
+                  <p className="text-[11px] text-parchment-600">Lore Earn Income: Success &rarr; Crit Success; Crit Fail &rarr; Failure</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
+                <input
+                  type="checkbox"
+                  checked={feats.virtuosicPerformer}
+                  onChange={(e) => setFeats({ ...feats, virtuosicPerformer: e.target.checked })}
+                  className="rounded text-emerald-600 focus:ring-emerald-500"
+                />
+                <div>
+                  <span className="font-bold text-stone-900">Virtuosic Performer</span>
+                  <p className="text-[11px] text-parchment-600">+2 circumstance bonus on Performance checks</p>
+                </div>
+              </label>
+
               <label className="flex items-center gap-2 p-2 rounded bg-parchment-50 border border-parchment-200 cursor-pointer hover:bg-parchment-100">
                 <input
                   type="checkbox"

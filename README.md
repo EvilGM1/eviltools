@@ -1,6 +1,6 @@
-# EvilTools: PF2e Remaster Craft & Scribe Suite
+# EvilTools: PF2e Remaster Craft, Scribe & Earn Suite
 
-**EvilTools** is an all-in-one, responsive web application uniting **EvilCraft** (Pathfinder 2e Remaster Item Crafting Suite) and **EvilScribe** (Wizard & Witch Spell Learning Suite) with instant **Pathbuilder 2e and Foundry VTT PF2e Character Ingestion**.
+**EvilTools** is an all-in-one, responsive web application uniting **EvilCraft** (Pathfinder 2e Remaster Item Crafting Suite), **EvilScribe** (Wizard & Witch Spell Learning Suite), and **EvilEarnings** (Downtime Earn Income Suite) with instant **Pathbuilder 2e and Foundry VTT PF2e Character Ingestion**.
 
 Built with **React**, **Vite**, and **Tailwind CSS**, EvilTools runs 100% in-browser offline with zero external server dependencies, and can be deployed directly to GitHub Pages or run locally.
 
@@ -10,9 +10,9 @@ Built with **React**, **Vite**, and **Tailwind CSS**, EvilTools runs 100% in-bro
 
 ### 1. Universal Character Ingestion & Persistence
 - **Pathbuilder 2e JSON Ingestion**: Automatically extracts level, class, abilities, skill proficiencies, purse coins, feats, and known formula books from Pathbuilder `build` files.
-- **Foundry VTT PF2e Actor Ingestion**: Ingests Foundry `Actor` JSON files, accurately mapping items, currency items (PP/GP/SP/CP), embedded spellcasting entries, known spells, and crafting formulas.
-- **Local Persistence & Character Switcher**: Persists multiple characters, formulas, downtime projects, and crafting/scribing histories in browser `localStorage`.
-- **Character Editor Modal**: Fully customize or create custom characters, level, skill ranks/modifiers, coin purse, and feat perks.
+- **Foundry VTT PF2e Actor Ingestion**: Ingests Foundry `Actor` JSON files, accurately mapping items, currency items (PP/GP/SP/CP), embedded spellcasting entries, known spells, crafting formulas, and lore skills.
+- **Local Persistence & Character Switcher**: Persists multiple characters, formulas, downtime projects, and crafting/scribing/earnings histories in browser `localStorage`.
+- **Character Editor Modal**: Fully customize or create custom characters, level, skill ranks/modifiers, Lore skills manager, coin purse, and feat perks.
 
 ---
 
@@ -44,7 +44,28 @@ Built with **React**, **Vite**, and **Tailwind CSS**, EvilTools runs 100% in-bro
 
 ---
 
-### 4. Interactive Dice Roller
+### 4. EvilEarnings (Remaster Downtime Earn Income Suite)
+- **Official PF2e Remaster Earn Income Engine**:
+  - Full Task Level scaling (Level 0 through 20) with Level-Based DCs (DC 14 to DC 40).
+  - Remaster daily income rate matrix supporting Untrained, Trained, Expert, Master, and Legendary ranks.
+  - Critical Success (Task Level + 1 rate), Success (Task Level rate), Failure (Task Level Untrained rate), and Critical Failure (0 cp / fired).
+- **Multi-Trade Skill Selection**:
+  - **Crafting**: Put artisan knowledge to work with Specialty Crafting circumstance bonuses (+1 / +2).
+  - **Performance**: Street busking and stage performance with Virtuosic Performer bonus (+2).
+  - **Lore Skills**: Put specialized Lore skills (Warfare Lore, Academia Lore, Underworld Lore, etc.) to work or add custom lores directly.
+- **Settlement Presets & Durations**:
+  - Quick settlement caps: Hamlet (Lvl 0), Village (Lvl 1), Small Town (Lvl 2), Town (Lvl 4), City (Lvl 7), Metropolis (Lvl 10).
+  - Flexible work duration presets: 1 Day, 7 Days (1 Week), 14 Days (2 Weeks), 30 Days (1 Month), or custom days.
+- **Assurance & Feat Automations**:
+  - **Experienced Professional**: Automatically upgrades Successes to Critical Successes and Critical Failures to normal Failures on Lore checks.
+  - **Assurance Feat**: Claim guaranteed steady income (flat 10 + proficiency bonus) without risk on lower-level tasks.
+- **One-Click Character Purse Deposit**:
+  - Instantly adds earned coins into character purse with automatic platinum/gold/silver/copper normalization.
+  - Persistent downtime job log with metrics on total days worked and total gold accumulated.
+
+---
+
+### 5. Interactive Dice Roller
 - Roll virtual d20 with animated rolls or type your physical d20 result.
 - Automatically calculates degree of success (Critical Success, Success, Failure, Critical Failure) with Nat 20/Nat 1 adjustments and feat upgrades.
 - One-click outcome application to character wealth, inventory, and project logs.

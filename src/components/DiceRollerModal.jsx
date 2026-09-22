@@ -11,11 +11,13 @@ export function DiceRollerModal({
   skillName,
   skillMod,
   targetDC,
-  mode = 'craft', // 'craft' or 'scribe'
+  mode = 'craft', // 'craft', 'scribe', or 'earnings'
   character,
   circumstanceBonus = 0,
+  circumstanceBonusLabel = '',
   isSpecialtyActive = false,
   impeccableCraftingActive = false,
+  isLoreSkill = false,
   onApplyResult
 }) {
   if (!isOpen) return null;
@@ -69,7 +71,8 @@ export function DiceRollerModal({
     const notes = [];
 
     if (circumstanceBonus > 0) {
-      notes.push(`Specialty Crafting: +${circumstanceBonus} circumstance bonus applied.`);
+      const label = circumstanceBonusLabel || (mode === 'craft' ? 'Specialty Crafting' : 'Circumstance Bonus');
+      notes.push(`${label}: +${circumstanceBonus} circumstance bonus applied.`);
     }
 
     // Feat evaluations
@@ -90,6 +93,17 @@ export function DiceRollerModal({
       if (character?.feats?.magicalShorthand && baseDegree === 'success') {
         finalDegree = 'criticalSuccess';
         notes.push('Magical Shorthand: Success upgraded to Critical Success (50% material discount).');
+      }
+    } else if (mode === 'earnings') {
+      // Experienced Professional: Lore skills Success -> Crit Success, Crit Fail -> Fail
+      if (isLoreSkill && character?.feats?.experiencedProfessional) {
+        if (baseDegree === 'success') {
+          finalDegree = 'criticalSuccess';
+          notes.push('Experienced Professional: Success on Lore check upgraded to Critical Success!');
+        } else if (baseDegree === 'criticalFailure') {
+          finalDegree = 'failure';
+          notes.push('Experienced Professional: Critical Failure on Lore check upgraded to Failure (still earns untrained rate)!');
+        }
       }
     }
 

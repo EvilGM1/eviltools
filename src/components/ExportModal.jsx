@@ -10,7 +10,8 @@ export function ExportModal({
   characters = [], 
   downtimeProjects = [], 
   craftHistory = [], 
-  scribeHistory = [] 
+  scribeHistory = [],
+  earningsHistory = []
 }) {
   const [exportMode, setExportMode] = useState('single'); // 'single' | 'roster'
   const [copied, setCopied] = useState(false);
@@ -33,7 +34,8 @@ export function ExportModal({
       },
       downtimeProjects: downtimeProjects.filter(p => p.characterId ? p.characterId === currentHero.id : true),
       craftHistory: craftHistory.filter(h => h.characterId ? h.characterId === currentHero.id : true),
-      scribeHistory: scribeHistory.filter(s => s.characterId ? s.characterId === currentHero.id : true)
+      scribeHistory: scribeHistory.filter(s => s.characterId ? s.characterId === currentHero.id : true),
+      earningsHistory: earningsHistory.filter(e => e.characterId ? e.characterId === currentHero.id : true)
     };
   };
 
@@ -45,7 +47,8 @@ export function ExportModal({
       characters,
       downtimeProjects,
       craftHistory,
-      scribeHistory
+      scribeHistory,
+      earningsHistory
     };
   };
 
@@ -59,9 +62,9 @@ export function ExportModal({
 
   const handleDownload = () => {
     if (exportMode === 'single') {
-      exportCharacterJSON(currentHero, downtimeProjects, craftHistory, scribeHistory);
+      exportCharacterJSON(currentHero, downtimeProjects, craftHistory, scribeHistory, earningsHistory);
     } else {
-      exportRosterBackupJSON(characters, downtimeProjects, craftHistory, scribeHistory);
+      exportRosterBackupJSON(characters, downtimeProjects, craftHistory, scribeHistory, earningsHistory);
     }
     confetti({
       particleCount: 70,
@@ -210,7 +213,7 @@ export function ExportModal({
                     ⏳ {downtimeProjects.length} Downtime Projects
                   </span>
                   <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">
-                    📜 {craftHistory.length + scribeHistory.length} History Logs
+                    📜 {craftHistory.length + scribeHistory.length + earningsHistory.length} History Logs
                   </span>
                 </div>
               </div>

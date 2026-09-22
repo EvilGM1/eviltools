@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header.jsx';
 import { CraftingSuite } from './components/CraftingSuite.jsx';
 import { ScribeSuite } from './components/ScribeSuite.jsx';
+import { EarningsSuite } from './components/EarningsSuite.jsx';
 import { ImportModal } from './components/ImportModal.jsx';
 import { ExportModal } from './components/ExportModal.jsx';
 import { CharacterEditorModal } from './components/CharacterEditorModal.jsx';
@@ -18,18 +19,25 @@ const DEFAULT_CHARACTERS = [
     wealth: { pp: 0, gp: 45, sp: 8, cp: 0 },
     skills: {
       crafting: { rank: 1, mod: 9, rankName: 'Trained' },
+      performance: { rank: 0, mod: 1, rankName: 'Untrained' },
       arcana: { rank: 2, mod: 13, rankName: 'Expert' },
       nature: { rank: 0, mod: 1, rankName: 'Untrained' },
       occultism: { rank: 1, mod: 11, rankName: 'Trained' },
       religion: { rank: 0, mod: 1, rankName: 'Untrained' }
     },
+    loreSkills: [
+      { id: 'lore-gin-1', name: 'Academia Lore', rank: 2, mod: 13, rankName: 'Expert' },
+      { id: 'lore-gin-2', name: 'Architecture Lore', rank: 1, mod: 11, rankName: 'Trained' }
+    ],
     feats: {
       magicalCrafting: true,
       alchemicalCrafting: false,
       snareCrafting: false,
       magicalShorthand: false,
       spellbookProdigy: true,
-      specialtyCrafting: false
+      specialtyCrafting: false,
+      experiencedProfessional: true,
+      virtuosicPerformer: false
     },
     formulas: [
       'Magic Wand (1st-Rank Spell)',
@@ -61,18 +69,25 @@ const DEFAULT_CHARACTERS = [
     wealth: { pp: 0, gp: 62, sp: 5, cp: 0 },
     skills: {
       crafting: { rank: 1, mod: 9, rankName: 'Trained' },
+      performance: { rank: 1, mod: 9, rankName: 'Trained' },
       arcana: { rank: 0, mod: 2, rankName: 'Untrained' },
       nature: { rank: 0, mod: 1, rankName: 'Untrained' },
       occultism: { rank: 2, mod: 13, rankName: 'Expert' },
       religion: { rank: 1, mod: 9, rankName: 'Trained' }
     },
+    loreSkills: [
+      { id: 'lore-duke-1', name: 'Underworld Lore', rank: 2, mod: 13, rankName: 'Expert' },
+      { id: 'lore-duke-2', name: 'Fortune-Telling Lore', rank: 1, mod: 11, rankName: 'Trained' }
+    ],
     feats: {
       magicalCrafting: true,
       alchemicalCrafting: false,
       snareCrafting: false,
       magicalShorthand: true,
       spellbookProdigy: false,
-      specialtyCrafting: false
+      specialtyCrafting: false,
+      experiencedProfessional: true,
+      virtuosicPerformer: false
     },
     formulas: [
       'Magic Wand (2nd-Rank Spell)',
@@ -103,18 +118,25 @@ const DEFAULT_CHARACTERS = [
     wealth: { pp: 0, gp: 88, sp: 0, cp: 0 },
     skills: {
       crafting: { rank: 2, mod: 13, rankName: 'Expert' },
+      performance: { rank: 0, mod: 0, rankName: 'Untrained' },
       arcana: { rank: 1, mod: 9, rankName: 'Trained' },
       nature: { rank: 0, mod: 0, rankName: 'Untrained' },
       occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
       religion: { rank: 0, mod: 0, rankName: 'Untrained' }
     },
+    loreSkills: [
+      { id: 'lore-sylor-1', name: 'Blacksmithing Lore', rank: 2, mod: 13, rankName: 'Expert' },
+      { id: 'lore-sylor-2', name: 'Mining Lore', rank: 1, mod: 11, rankName: 'Trained' }
+    ],
     feats: {
       magicalCrafting: true,
       alchemicalCrafting: true,
       snareCrafting: false,
       magicalShorthand: false,
       spellbookProdigy: false,
-      specialtyCrafting: true
+      specialtyCrafting: true,
+      experiencedProfessional: false,
+      virtuosicPerformer: false
     },
     formulas: [
       'Striking Rune',
@@ -196,6 +218,14 @@ export function App() {
     return [];
   });
 
+  const [earningsHistory, setEarningsHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('eviltools_earnings_history');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  });
+
   // Modals state
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -225,6 +255,10 @@ export function App() {
     localStorage.setItem('eviltools_scribe_history', JSON.stringify(scribeHistory));
   }, [scribeHistory]);
 
+  useEffect(() => {
+    localStorage.setItem('eviltools_earnings_history', JSON.stringify(earningsHistory));
+  }, [earningsHistory]);
+
   const activeCharacter = characters.find(c => c.id === activeCharacterId) || characters[0];
 
   // Character Management Handlers
@@ -247,6 +281,9 @@ export function App() {
       }
       if (Array.isArray(importedData.scribeHistory)) {
         setScribeHistory(importedData.scribeHistory);
+      }
+      if (Array.isArray(importedData.earningsHistory)) {
+        setEarningsHistory(importedData.earningsHistory);
       }
       return;
     }
@@ -294,6 +331,15 @@ export function App() {
         return [...prev, ...newHist];
       });
     }
+
+    // Merge any bundled earnings history
+    if (Array.isArray(importedCharacter.importedEarningsHistory) && importedCharacter.importedEarningsHistory.length > 0) {
+      setEarningsHistory(prev => {
+        const existingIds = new Set(prev.map(h => h.id));
+        const newHist = importedCharacter.importedEarningsHistory.filter(h => !existingIds.has(h.id));
+        return [...prev, ...newHist];
+      });
+    }
   };
 
   const handleOpenEditModal = () => {
@@ -311,18 +357,22 @@ export function App() {
       wealth: { pp: 0, gp: 15, sp: 0, cp: 0 },
       skills: {
         crafting: { rank: 1, mod: 5, rankName: 'Trained' },
+        performance: { rank: 0, mod: 0, rankName: 'Untrained' },
         arcana: { rank: 1, mod: 5, rankName: 'Trained' },
         nature: { rank: 0, mod: 0, rankName: 'Untrained' },
         occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
         religion: { rank: 0, mod: 0, rankName: 'Untrained' }
       },
+      loreSkills: [],
       feats: {
         magicalCrafting: false,
         alchemicalCrafting: false,
         snareCrafting: false,
         magicalShorthand: false,
         spellbookProdigy: false,
-        specialtyCrafting: false
+        specialtyCrafting: false,
+        experiencedProfessional: false,
+        virtuosicPerformer: false
       },
       formulas: [],
       spellcasting: {
@@ -350,11 +400,13 @@ export function App() {
           wealth: { pp: 0, gp: 15, sp: 0, cp: 0 },
           skills: {
             crafting: { rank: 1, mod: 5, rankName: 'Trained' },
+            performance: { rank: 0, mod: 0, rankName: 'Untrained' },
             arcana: { rank: 1, mod: 5, rankName: 'Trained' },
             nature: { rank: 0, mod: 0, rankName: 'Untrained' },
             occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
             religion: { rank: 0, mod: 0, rankName: 'Untrained' }
           },
+          loreSkills: [],
           feats: {},
           formulas: [],
           spellcasting: { traditions: ['arcane'], entries: [] },
@@ -402,12 +454,19 @@ export function App() {
             craftHistory={craftHistory}
             onUpdateHistory={setCraftHistory}
           />
-        ) : (
+        ) : activeTab === 'scribe' ? (
           <ScribeSuite
             character={activeCharacter}
             onUpdateCharacter={handleUpdateActiveCharacter}
             scribeHistory={scribeHistory}
             onUpdateHistory={setScribeHistory}
+          />
+        ) : (
+          <EarningsSuite
+            character={activeCharacter}
+            onUpdateCharacter={handleUpdateActiveCharacter}
+            earningsHistory={earningsHistory}
+            onUpdateHistory={setEarningsHistory}
           />
         )}
       </main>
@@ -418,7 +477,7 @@ export function App() {
           <div className="flex items-center gap-2">
             <span className="font-serif font-bold text-gold-300">EvilTools Suite</span>
             <span>&bull;</span>
-            <span>Pathfinder 2e Remaster Crafting & Scribing Engine</span>
+            <span>Pathfinder 2e Remaster Crafting, Scribing & Earn Income Engine</span>
           </div>
           <div className="text-parchment-500 text-[11px]">
             Compatible with Pathbuilder 2e & Foundry VTT PF2e JSON exports
@@ -441,6 +500,7 @@ export function App() {
         downtimeProjects={downtimeProjects}
         craftHistory={craftHistory}
         scribeHistory={scribeHistory}
+        earningsHistory={earningsHistory}
       />
 
       <CharacterEditorModal

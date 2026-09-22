@@ -171,31 +171,44 @@ export function Header({
         )}
 
         {/* Tab Navigation */}
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => setActiveTab('crafting')}
-            className={`flex-1 py-2.5 px-4 rounded-t-xl font-serif font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all border-t-2 border-x-2 ${
+            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
               activeTab === 'crafting'
                 ? 'bg-parchment-100 text-forge-900 border-gold-500 shadow-lg'
                 : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
             }`}
           >
             <Hammer className={`w-4 h-4 ${activeTab === 'crafting' ? 'text-forge-700' : 'text-parchment-400'}`} />
-            <span>EvilCraft (Item Crafting Suite)</span>
+            <span className="truncate">EvilCraft (Crafting)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('scribe')}
-            className={`flex-1 py-2.5 px-4 rounded-t-xl font-serif font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all border-t-2 border-x-2 ${
+            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
               activeTab === 'scribe'
                 ? 'bg-parchment-100 text-arcane-950 border-gold-500 shadow-lg'
                 : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
             }`}
           >
             <BookOpen className={`w-4 h-4 ${activeTab === 'scribe' ? 'text-arcane-600' : 'text-parchment-400'}`} />
-            <span>EvilScribe (Spell Learning Suite)</span>
+            <span className="truncate">EvilScribe (Spell Learning)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('earnings')}
+            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
+              activeTab === 'earnings'
+                ? 'bg-parchment-100 text-emerald-950 border-gold-500 shadow-lg'
+                : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
+            }`}
+          >
+            <Coins className={`w-4 h-4 ${activeTab === 'earnings' ? 'text-emerald-600' : 'text-parchment-400'}`} />
+            <span className="truncate">EvilEarnings (Earn Income)</span>
           </button>
         </div>
       </div>

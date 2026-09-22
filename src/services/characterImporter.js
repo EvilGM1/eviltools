@@ -70,7 +70,7 @@ export function downloadJSON(data, filename = 'character.json') {
 /**
  * Exports a single character to an EvilTools JSON file
  */
-export function exportCharacterJSON(character, projects = [], craftHistory = [], scribeHistory = []) {
+export function exportCharacterJSON(character, projects = [], craftHistory = [], scribeHistory = [], earningsHistory = []) {
   if (!character) return null;
   const safeName = (character.name || 'Hero').replace(/[^a-zA-Z0-9_-]/g, '_');
   const filename = `${safeName}_Lvl${character.level || 1}_EvilTools.json`;
@@ -85,7 +85,8 @@ export function exportCharacterJSON(character, projects = [], craftHistory = [],
     },
     downtimeProjects: projects.filter(p => p.characterId ? p.characterId === character.id : true),
     craftHistory,
-    scribeHistory
+    scribeHistory,
+    earningsHistory
   };
 
   downloadJSON(payload, filename);
@@ -95,7 +96,7 @@ export function exportCharacterJSON(character, projects = [], craftHistory = [],
 /**
  * Exports all characters & downtime records to a complete party backup JSON file
  */
-export function exportRosterBackupJSON(characters = [], downtimeProjects = [], craftHistory = [], scribeHistory = []) {
+export function exportRosterBackupJSON(characters = [], downtimeProjects = [], craftHistory = [], scribeHistory = [], earningsHistory = []) {
   const filename = `EvilTools_PartyBackup_${new Date().toISOString().slice(0, 10)}.json`;
 
   const payload = {
@@ -105,7 +106,8 @@ export function exportRosterBackupJSON(characters = [], downtimeProjects = [], c
     characters,
     downtimeProjects,
     craftHistory,
-    scribeHistory
+    scribeHistory,
+    earningsHistory
   };
 
   downloadJSON(payload, filename);
@@ -132,11 +134,13 @@ function parseEvilToolsCharacter(char, root = {}) {
     wealth: { pp, gp, sp, cp, totalCopper },
     skills: {
       crafting: { ...(char.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
+      performance: { ...(char.skills?.performance || { rank: 0, mod: 0, rankName: 'Untrained' }) },
       arcana: { ...(char.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
       nature: { ...(char.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
       occultism: { ...(char.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
       religion: { ...(char.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
     },
+    loreSkills: Array.isArray(char.loreSkills) ? char.loreSkills.map(l => ({ ...l })) : [],
     feats: {
       alchemicalCrafting: !!char.feats?.alchemicalCrafting,
       magicalCrafting: !!char.feats?.magicalCrafting,
@@ -145,6 +149,8 @@ function parseEvilToolsCharacter(char, root = {}) {
       spellbookProdigy: !!char.feats?.spellbookProdigy,
       specialtyCrafting: !!char.feats?.specialtyCrafting,
       impeccableCrafting: !!char.feats?.impeccableCrafting,
+      experiencedProfessional: !!char.feats?.experiencedProfessional,
+      virtuosicPerformer: !!char.feats?.virtuosicPerformer,
       craftAnything: !!char.feats?.craftAnything,
       inventor: !!char.feats?.inventor,
       communalCrafting: !!char.feats?.communalCrafting,
@@ -160,7 +166,8 @@ function parseEvilToolsCharacter(char, root = {}) {
     },
     importedProjects: root.downtimeProjects || [],
     importedCraftHistory: root.craftHistory || [],
-    importedScribeHistory: root.scribeHistory || []
+    importedScribeHistory: root.scribeHistory || [],
+    importedEarningsHistory: root.earningsHistory || []
   };
 }
 
@@ -190,7 +197,8 @@ export function importCharacterJSON(rawData) {
       characters: json.characters.map(c => parseEvilToolsCharacter(c)),
       downtimeProjects: json.downtimeProjects || [],
       craftHistory: json.craftHistory || [],
-      scribeHistory: json.scribeHistory || []
+      scribeHistory: json.scribeHistory || [],
+      earningsHistory: json.earningsHistory || []
     };
   }
 
@@ -247,11 +255,32 @@ function parsePathbuilderJSON(b) {
 
   const skills = {
     crafting: calculateSkill('crafting', intMod),
+    performance: calculateSkill('performance', chaMod),
     arcana: calculateSkill('arcana', intMod),
     nature: calculateSkill('nature', wisMod),
     occultism: calculateSkill('occultism', intMod),
     religion: calculateSkill('religion', wisMod)
   };
+
+  // Lore skills from b.lores
+  const loreSkills = [];
+  if (Array.isArray(b.lores)) {
+    for (let idx = 0; idx < b.lores.length; idx++) {
+      const l = b.lores[idx];
+      const lName = Array.isArray(l) ? l[0] : (l?.name || String(l));
+      const rawRank = Array.isArray(l) ? l[1] : (l?.rank ?? 2);
+      const rank = normalizeRank(rawRank);
+      const profBonus = rank > 0 ? (rank * 2) + level : 0;
+      const mod = profBonus + intMod;
+      loreSkills.push({
+        id: `lore-pb-${idx + 1}`,
+        name: lName,
+        rank,
+        mod,
+        rankName: RANK_NAMES[rank]
+      });
+    }
+  }
 
   // Money
   const money = b.money || {};
@@ -280,6 +309,8 @@ function parsePathbuilderJSON(b) {
     spellbookProdigy: hasFeat('Spellbook Prodigy'),
     specialtyCrafting: hasFeat('Specialty Crafting'),
     impeccableCrafting: hasFeat('Impeccable Crafting'),
+    experiencedProfessional: hasFeat('Experienced Professional'),
+    virtuosicPerformer: hasFeat('Virtuosic Performer'),
     craftAnything: hasFeat('Craft Anything'),
     inventor: hasFeat('Inventor'),
     communalCrafting: hasFeat('Communal Crafting'),
@@ -339,6 +370,7 @@ function parsePathbuilderJSON(b) {
     avatar: '',
     wealth,
     skills,
+    loreSkills,
     feats,
     formulas,
     spellcasting: {
@@ -375,6 +407,7 @@ function parseFoundryPF2eJSON(f) {
 
   const skills = {
     crafting: parseSkill('crafting', 'int'),
+    performance: parseSkill('performance', 'cha'),
     arcana: parseSkill('arcana', 'int'),
     nature: parseSkill('nature', 'wis'),
     occultism: parseSkill('occultism', 'int'),
@@ -415,6 +448,8 @@ function parseFoundryPF2eJSON(f) {
     spellbookProdigy: hasFeat('Spellbook Prodigy'),
     specialtyCrafting: hasFeat('Specialty Crafting'),
     impeccableCrafting: hasFeat('Impeccable Crafting'),
+    experiencedProfessional: hasFeat('Experienced Professional'),
+    virtuosicPerformer: hasFeat('Virtuosic Performer'),
     craftAnything: hasFeat('Craft Anything'),
     inventor: hasFeat('Inventor'),
     communalCrafting: hasFeat('Communal Crafting'),
@@ -435,6 +470,21 @@ function parseFoundryPF2eJSON(f) {
   for (const it of items) {
     if (it.type === 'formula') formulas.push(it.name);
   }
+
+  // Lore skills from Foundry items (type === 'lore')
+  const loreItems = items.filter(it => it.type === 'lore');
+  const loreSkills = loreItems.map((it, idx) => {
+    const rawRank = it.system?.proficient?.value ?? 1;
+    const rank = normalizeRank(rawRank);
+    const mod = Number(it.system?.mod?.value) || (rank > 0 ? (rank * 2) + level + getAbilityMod('int') : 0);
+    return {
+      id: it._id || it.id || `lore-fvtt-${idx + 1}`,
+      name: it.name || 'Lore',
+      rank,
+      mod,
+      rankName: RANK_NAMES[rank]
+    };
+  });
 
   // Spellcasting entries & Known Spells
   const spellcastingEntries = [];
@@ -476,6 +526,7 @@ function parseFoundryPF2eJSON(f) {
     avatar: img,
     wealth,
     skills,
+    loreSkills,
     feats,
     formulas,
     spellcasting: {
