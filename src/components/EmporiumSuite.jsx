@@ -14,14 +14,20 @@ import {
   Check, 
   Copy,
   Layers,
-  ArrowUpDown
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Loader2,
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
-import { itemsIndex as itemsData } from '../services/compendiumLoader.js';
+import { itemsIndex as itemsData, fetchItemDescription } from '../services/compendiumLoader.js';
 import { 
   SETTLEMENT_TIERS, 
   SHOP_ARCHETYPES, 
   SHOP_SIZES, 
   MARKET_VARIANCES,
+  MERCHANT_ATTITUDES,
   generateEmporiumShop,
   generateShopName,
   generateMerchantName,
@@ -44,6 +50,12 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
 
   const [shop, setShop] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [copiedToast, setCopiedToast] = useState(false);
+
+  // Item description accordion state
+  const [expandedItemId, setExpandedItemId] = useState(null);
+  const [itemDescriptions, setItemDescriptions] = useState({});
+  const [loadingDescId, setLoadingDescId] = useState(null);
 
   const effectiveSettlementLevel = useMemo(() => {
     if (settlementTier === 'custom') return Math.max(0, Math.min(25, Number(customSettlementLevel) || 0));
@@ -63,6 +75,7 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
   }, []);
 
   const handleGenerateNewShop = () => {
+    setExpandedItemId(null);
     const newShop = generateEmporiumShop({
       itemsData,
       settlementTier,
@@ -71,15 +84,15 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
       shopSizeKey,
       customItemCount: customCount,
       isShrewd: Math.random() < 0.25,
-      forcedAttitude: Math.random() < 0.25 ? 'unfriendly' : Math.random() < 0.75 ? 'indifferent' : 'friendly',
-      forcedVariance: varianceKey,
+      // Leaving forcedAttitude and forcedVariance null allows them to be procedurally rolled together!
       allowedRarities
     });
     setShop(newShop);
+    setVarianceKey(newShop.varianceKey); // Updates the Market Variance button in the UI
   };
 
   // Sync variance changes to inventory prices immediately
-  const handleVarianceChange = (newVariance) => {
+  const handleVarianceChange = (newVariance, newAttKey = null) => {
     setVarianceKey(newVariance);
     if (!shop) return;
 
@@ -92,12 +105,48 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
       };
     });
 
+    const attKey = newAttKey || shop.merchant.attitudeKey;
+    const attObj = MERCHANT_ATTITUDES[attKey] || MERCHANT_ATTITUDES.indifferent;
+
     setShop({
       ...shop,
       varianceKey: newVariance,
       varianceLabel: MARKET_VARIANCES[newVariance]?.label || 'Standard (100%)',
+      merchant: {
+        ...shop.merchant,
+        attitudeKey: attKey,
+        attitudeLabel: attObj.label,
+        attitudeFlavor: attObj.flavor
+      },
+      socialProfile: {
+        ...shop.socialProfile,
+        makeImpressionDC: shop.socialProfile.totalWillDC + attObj.dcMod,
+        requestDC: shop.socialProfile.totalWillDC + attObj.dcMod
+      },
       items: updatedItems
     });
+  };
+
+  const handleToggleExpandItem = async (itemId) => {
+    if (expandedItemId === itemId) {
+      setExpandedItemId(null);
+      return;
+    }
+
+    setExpandedItemId(itemId);
+
+    if (!itemDescriptions[itemId]) {
+      setLoadingDescId(itemId);
+      try {
+        const desc = await fetchItemDescription(itemId);
+        setItemDescriptions(prev => ({ ...prev, [itemId]: desc || 'No detailed rules text available for this item in compendium.' }));
+      } catch (err) {
+        console.warn('Could not load description for item', itemId, err);
+        setItemDescriptions(prev => ({ ...prev, [itemId]: 'Failed to load item description.' }));
+      } finally {
+        setLoadingDescId(null);
+      }
+    }
   };
 
   const handleRerollShopName = () => {
@@ -197,7 +246,7 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
     setShop({ ...shop, items: [...shop.items, newItem] });
   };
 
-  // 1-Click Purchase for the active character
+  // 1-Click Purchase for active character
   const handleBuyItem = (item) => {
     if (!character || !onUpdateCharacter) return;
     const charWealthCopper = wealthToCopper(character.wealth);
@@ -233,7 +282,9 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
 
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
+      setCopiedToast(true);
       setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopiedToast(false), 4500);
     });
   };
 
@@ -368,6 +419,7 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
             onRerollShopName={handleRerollShopName}
             onRerollMerchantName={handleRerollMerchantName}
             onRerollQuirk={handleRerollQuirk}
+            onVarianceChange={handleVarianceChange}
           />
 
           {/* Market Variance Selector Bar */}
@@ -405,13 +457,32 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
                 type="button"
                 onClick={handleCopyShopMarkdown}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-arcane-800/80 hover:bg-arcane-700 text-parchment-200 border border-arcane-600/60 flex items-center gap-1.5 transition-colors"
-                title="Copy Shop & Inventory as Markdown"
+                title="Copies a formatted Markdown table of this shop & inventory to your clipboard for easy pasting into Foundry Journals, Discord, or session notes."
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied!' : 'Copy Summary'}</span>
+                <span>{copied ? 'Copied to Clipboard!' : 'Copy Summary (Markdown)'}</span>
               </button>
             </div>
           </div>
+
+          {/* Toast feedback for Copy Summary */}
+          {copiedToast && (
+            <div className="bg-emerald-950/90 border border-emerald-500/80 text-emerald-200 text-xs px-4 py-2.5 rounded-xl flex items-center justify-between shadow-lg animate-fade-in">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-400" />
+                <span>
+                  <strong>Shop summary copied!</strong> You can paste this formatted Markdown table directly into your Foundry VTT Journal notes, Discord, Obsidian, or GM campaign tracker.
+                </span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setCopiedToast(false)}
+                className="text-emerald-400 hover:text-emerald-100 text-xs font-bold ml-3"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* Inventory Table */}
           <div className="bg-arcane-900/70 border border-gold-600/40 rounded-xl overflow-hidden shadow-xl">
@@ -422,7 +493,7 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
                   Stocked Inventory ({shop.items.length} items)
                 </h3>
                 <span className="text-xs text-parchment-500">
-                  &bull; {shop.poolCount} candidate items matching settlement level {effectiveSettlementLevel}
+                  &bull; Click any item to read full description and effects
                 </span>
               </div>
               <button
@@ -439,7 +510,7 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-arcane-950 text-parchment-400 uppercase text-[10px] tracking-wider border-b border-arcane-800">
-                    <th className="py-2.5 px-4 font-bold">Item Name</th>
+                    <th className="py-2.5 px-4 font-bold">Item Name (Click to inspect)</th>
                     <th className="py-2.5 px-3 font-bold text-center">Level</th>
                     <th className="py-2.5 px-3 font-bold text-center">Rarity</th>
                     <th className="py-2.5 px-3 font-bold text-center">Type</th>
@@ -449,83 +520,175 @@ export function EmporiumSuite({ character, onUpdateCharacter }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-arcane-800/60">
-                  {shop.items.map((item, idx) => (
-                    <tr key={`${item.id}-${idx}`} className="hover:bg-arcane-800/40 transition-colors">
-                      <td className="py-2.5 px-4 font-semibold text-parchment-100">
-                        <div className="flex flex-col">
-                          <span>{item.name}</span>
-                          {item.traits && item.traits.length > 0 && (
-                            <div className="flex gap-1 flex-wrap mt-0.5">
-                              {item.traits.slice(0, 3).map(trait => (
-                                <span key={trait} className="px-1 py-0.2 rounded text-[9px] bg-arcane-800 text-parchment-400">
-                                  {trait}
-                                </span>
-                              ))}
+                  {shop.items.map((item, idx) => {
+                    const isExpanded = expandedItemId === item.id;
+
+                    return (
+                      <React.Fragment key={`${item.id}-${idx}`}>
+                        <tr 
+                          onClick={() => handleToggleExpandItem(item.id)}
+                          className={`cursor-pointer transition-colors ${
+                            isExpanded ? 'bg-arcane-800/80 border-b border-arcane-700/60' : 'hover:bg-arcane-800/40'
+                          }`}
+                          title="Click to view full description and rules effects"
+                        >
+                          <td className="py-2.5 px-4 font-semibold text-parchment-100">
+                            <div className="flex items-center gap-2">
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-gold-400 shrink-0" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-parchment-500 shrink-0" />
+                              )}
+                              <div className="flex flex-col">
+                                <span className="hover:text-gold-300 transition-colors">{item.name}</span>
+                                {item.traits && item.traits.length > 0 && (
+                                  <div className="flex gap-1 flex-wrap mt-0.5">
+                                    {item.traits.slice(0, 3).map(trait => (
+                                      <span key={trait} className="px-1 py-0.2 rounded text-[9px] bg-arcane-800 text-parchment-400">
+                                        {trait}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="px-1.5 py-0.5 rounded bg-arcane-800 text-parchment-300 font-semibold text-[11px]">
-                          Lvl {item.level}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          item.rarity === 'uncommon'
-                            ? 'bg-orange-950 text-orange-300 border border-orange-700/80'
-                            : item.rarity === 'rare'
-                            ? 'bg-blue-950 text-blue-300 border border-blue-700/80'
-                            : 'bg-arcane-800 text-parchment-400'
-                        }`}>
-                          {item.rarity}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-parchment-400 capitalize">
-                        {item.type}
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        {shop.varianceKey === 'standard' ? (
-                          <span className="text-parchment-400">{item.basePrice}</span>
-                        ) : (
-                          <span className="line-through text-parchment-500 text-[11px]">{item.basePrice}</span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className="px-1.5 py-0.5 rounded bg-arcane-800 text-parchment-300 font-semibold text-[11px]">
+                              Lvl {item.level}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              item.rarity === 'uncommon'
+                                ? 'bg-orange-950 text-orange-300 border border-orange-700/80'
+                                : item.rarity === 'rare'
+                                ? 'bg-blue-950 text-blue-300 border border-blue-700/80'
+                                : 'bg-arcane-800 text-parchment-400'
+                            }`}>
+                              {item.rarity}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center text-parchment-400 capitalize">
+                            {item.type}
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            {shop.varianceKey === 'standard' ? (
+                              <span className="text-parchment-400">{item.basePrice}</span>
+                            ) : (
+                              <span className="line-through text-parchment-500 text-[11px]">{item.basePrice}</span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-bold text-gold-300 text-sm">
+                            {item.adjustedPriceStr}
+                          </td>
+                          <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-1.5">
+                              {character && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleBuyItem(item)}
+                                  className="px-2 py-1 rounded bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 border border-emerald-600/60 font-semibold text-[11px] flex items-center gap-1 transition-colors"
+                                  title={`Buy item and deduct coins from ${character.name}`}
+                                >
+                                  <ShoppingCart className="w-3 h-3" /> Buy
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleRerollSingleItem(idx)}
+                                className="p-1 rounded hover:bg-arcane-800 text-parchment-400 hover:text-gold-300 transition-colors"
+                                title="Reroll this item"
+                              >
+                                <RotateCw className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteItem(idx)}
+                                className="p-1 rounded hover:bg-arcane-800 text-parchment-400 hover:text-red-400 transition-colors"
+                                title="Remove item"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Expandable Item Description Drawer */}
+                        {isExpanded && (
+                          <tr className="bg-arcane-950/95 border-b border-arcane-700/60">
+                            <td colSpan={7} className="p-4">
+                              <div className="bg-arcane-900/90 border border-gold-600/40 rounded-xl p-4 shadow-inner space-y-3">
+                                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-arcane-800 pb-2.5">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <FileText className="w-4 h-4 text-gold-400 shrink-0" />
+                                    <span className="font-serif font-bold text-parchment-100 text-sm">{item.name}</span>
+                                    <span className="px-2 py-0.5 rounded text-[10px] bg-arcane-800 text-parchment-300 font-semibold">
+                                      Level {item.level}
+                                    </span>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                      item.rarity === 'uncommon' ? 'bg-orange-950 text-orange-300 border border-orange-700/80' :
+                                      item.rarity === 'rare' ? 'bg-blue-950 text-blue-300 border border-blue-700/80' :
+                                      'bg-arcane-800 text-parchment-400'
+                                    }`}>
+                                      {item.rarity}
+                                    </span>
+                                    <span className="text-[11px] text-parchment-400 capitalize bg-arcane-950 px-2 py-0.5 rounded border border-arcane-800">
+                                      {item.type}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-3">
+                                    <div className="text-right">
+                                      <span className="text-[10px] uppercase font-bold text-parchment-400 block">Price:</span>
+                                      <span className="font-mono text-gold-300 font-bold text-sm">{item.adjustedPriceStr}</span>
+                                    </div>
+                                    {character && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleBuyItem(item)}
+                                        className="px-3 py-1.5 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-emerald-100 border border-emerald-600 font-bold text-xs flex items-center gap-1.5 shadow active:scale-95 transition-all"
+                                      >
+                                        <ShoppingCart className="w-3.5 h-3.5" /> Buy ({item.adjustedPriceStr})
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Full Traits */}
+                                {item.traits && item.traits.length > 0 && (
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[10px] uppercase font-bold text-parchment-400">Traits:</span>
+                                    {item.traits.map(trait => (
+                                      <span key={trait} className="px-2 py-0.5 rounded bg-arcane-950 border border-arcane-700 text-gold-300/90 text-[10px] font-medium">
+                                        {trait}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Compendium HTML Description */}
+                                <div className="text-parchment-200 text-xs leading-relaxed max-h-64 overflow-y-auto pr-2 prose prose-invert prose-xs [&_p]:mb-2 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_strong]:text-gold-200 [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4 border-t border-arcane-800/80 pt-2.5">
+                                  {loadingDescId === item.id ? (
+                                    <div className="flex items-center gap-2 text-parchment-400 py-4 justify-center">
+                                      <Loader2 className="w-4 h-4 animate-spin text-gold-400" />
+                                      <span>Loading item description from compendium...</span>
+                                    </div>
+                                  ) : itemDescriptions[item.id] ? (
+                                    <div dangerouslySetInnerHTML={{ __html: itemDescriptions[item.id] }} />
+                                  ) : (
+                                    <div className="text-parchment-500 italic py-2 text-center">
+                                      No detailed rules text found in compendium for this item.
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                      <td className="py-2.5 px-4 text-right font-bold text-gold-300 text-sm">
-                        {item.adjustedPriceStr}
-                      </td>
-                      <td className="py-2.5 px-4">
-                        <div className="flex items-center justify-center gap-1.5">
-                          {character && (
-                            <button
-                              type="button"
-                              onClick={() => handleBuyItem(item)}
-                              className="px-2 py-1 rounded bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 border border-emerald-600/60 font-semibold text-[11px] flex items-center gap-1 transition-colors"
-                              title={`Buy item and deduct coins from ${character.name}`}
-                            >
-                              <ShoppingCart className="w-3 h-3" /> Buy
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleRerollSingleItem(idx)}
-                            className="p-1 rounded hover:bg-arcane-800 text-parchment-400 hover:text-gold-300 transition-colors"
-                            title="Reroll this item"
-                          >
-                            <RotateCw className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteItem(idx)}
-                            className="p-1 rounded hover:bg-arcane-800 text-parchment-400 hover:text-red-400 transition-colors"
-                            title="Remove item"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

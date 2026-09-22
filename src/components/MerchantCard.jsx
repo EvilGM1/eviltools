@@ -18,7 +18,8 @@ export function MerchantCard({
   onUpdateShop,
   onRerollShopName,
   onRerollMerchantName,
-  onRerollQuirk
+  onRerollQuirk,
+  onVarianceChange
 }) {
   if (!shop || !shop.merchant) return null;
 
@@ -31,21 +32,25 @@ export function MerchantCard({
     // Automatically suggest variance if changing attitude
     const suggestedVariance = attObj.defaultVariance || 'standard';
 
-    onUpdateShop({
-      ...shop,
-      varianceKey: suggestedVariance,
-      merchant: {
-        ...merchant,
-        attitudeKey: newAttKey,
-        attitudeLabel: attObj.label,
-        attitudeFlavor: attObj.flavor
-      },
-      socialProfile: {
-        ...socialProfile,
-        makeImpressionDC: socialProfile.totalWillDC + attObj.dcMod,
-        requestDC: socialProfile.totalWillDC + attObj.dcMod
-      }
-    });
+    if (onVarianceChange) {
+      onVarianceChange(suggestedVariance, newAttKey);
+    } else {
+      onUpdateShop({
+        ...shop,
+        varianceKey: suggestedVariance,
+        merchant: {
+          ...merchant,
+          attitudeKey: newAttKey,
+          attitudeLabel: attObj.label,
+          attitudeFlavor: attObj.flavor
+        },
+        socialProfile: {
+          ...socialProfile,
+          makeImpressionDC: socialProfile.totalWillDC + attObj.dcMod,
+          requestDC: socialProfile.totalWillDC + attObj.dcMod
+        }
+      });
+    }
   };
 
   const handleShrewdToggle = () => {

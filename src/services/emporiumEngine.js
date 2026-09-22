@@ -325,6 +325,27 @@ export function filterItemsForEmporium(items = [], {
   });
 }
 
+/**
+ * Rolls market variance based on merchant attitude tendencies.
+ * @param {string} attitudeKey 'unfriendly' | 'indifferent' | 'friendly'
+ * @returns {string} 'fleece' | 'standard' | 'motivated'
+ */
+export function rollVarianceForAttitude(attitudeKey = 'indifferent') {
+  const roll = Math.random();
+  if (attitudeKey === 'unfriendly') {
+    // 75% Fleece, 25% Standard
+    return roll < 0.75 ? 'fleece' : 'standard';
+  }
+  if (attitudeKey === 'friendly') {
+    // 75% Motivated Seller, 25% Standard
+    return roll < 0.75 ? 'motivated' : 'standard';
+  }
+  // Indifferent: 60% Standard, 20% Motivated, 20% Fleece
+  if (roll < 0.20) return 'fleece';
+  if (roll < 0.40) return 'motivated';
+  return 'standard';
+}
+
 export function generateEmporiumShop({
   itemsData = [],
   settlementTier = 'town',
@@ -333,8 +354,8 @@ export function generateEmporiumShop({
   shopSizeKey = 'medium',
   customItemCount = 8,
   isShrewd = false,
-  forcedAttitude = 'indifferent',
-  forcedVariance = 'standard',
+  forcedAttitude = null,
+  forcedVariance = null,
   allowedRarities = ['common', 'uncommon']
 } = {}) {
   const candidatePool = filterItemsForEmporium(itemsData, {
@@ -346,6 +367,13 @@ export function generateEmporiumShop({
   const merchantName = generateMerchantName();
   const shopName = generateShopName(archetypeKey, merchantName);
   const quirk = generateQuirk();
+
+  const attitudeKey = forcedAttitude || (
+    Math.random() < 0.25 ? 'unfriendly' : Math.random() < 0.75 ? 'indifferent' : 'friendly'
+  );
+  const attitudeObj = MERCHANT_ATTITUDES[attitudeKey] || MERCHANT_ATTITUDES.indifferent;
+
+  const varianceKey = forcedVariance || rollVarianceForAttitude(attitudeKey);
 
   let targetCount = 8;
   if (shopSizeKey === 'small') targetCount = Math.floor(Math.random() * 3) + 4;
@@ -362,7 +390,7 @@ export function generateEmporiumShop({
 
   const selectedItems = shuffled.slice(0, Math.min(targetCount, shuffled.length)).map(item => {
     const baseCopper = priceToCopper(item.price);
-    const adj = calculateAdjustedPrice(baseCopper, forcedVariance);
+    const adj = calculateAdjustedPrice(baseCopper, varianceKey);
     return {
       id: item.id,
       name: item.name,
@@ -379,7 +407,6 @@ export function generateEmporiumShop({
 
   const baseDC = getSettlementDC(settlementLevel);
   const shrewdBonus = isShrewd ? 2 : 0;
-  const attitudeObj = MERCHANT_ATTITUDES[forcedAttitude] || MERCHANT_ATTITUDES.indifferent;
   const attitudeMod = attitudeObj.dcMod;
 
   return {
@@ -388,7 +415,7 @@ export function generateEmporiumShop({
     merchant: {
       name: merchantName,
       quirk,
-      attitudeKey: forcedAttitude,
+      attitudeKey,
       attitudeLabel: attitudeObj.label,
       attitudeFlavor: attitudeObj.flavor,
       isShrewd
@@ -400,8 +427,8 @@ export function generateEmporiumShop({
     archetypeKey,
     archetypeLabel: SHOP_ARCHETYPES[archetypeKey]?.label || 'General Store',
     shopSizeKey,
-    varianceKey: forcedVariance,
-    varianceLabel: MARKET_VARIANCES[forcedVariance]?.label || 'Standard (100%)',
+    varianceKey,
+    varianceLabel: MARKET_VARIANCES[varianceKey]?.label || 'Standard (100%)',
     socialProfile: {
       baseDC,
       totalWillDC: baseDC + shrewdBonus,
