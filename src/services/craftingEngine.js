@@ -558,7 +558,8 @@ export function getPreciousMaterialDetails(materialId = 'none', gradeId = 'stand
 
   // Formatted display name
   const cleanBaseName = item?.name || 'Item';
-  const displayName = `${material.name.split(' ')[0]} ${cleanBaseName} (${grade.name})`;
+  const prefix = material.shortName || material.name.split(' (')[0].trim();
+  const displayName = `${prefix} ${cleanBaseName} (${grade.name})`;
 
   return {
     material,

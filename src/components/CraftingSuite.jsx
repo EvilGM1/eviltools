@@ -30,6 +30,7 @@ import {
   extractSpellCostGp,
   PRECIOUS_MATERIALS,
   isMaterialEligible,
+  getItemEquipmentType,
   getPreciousMaterialDetails
 } from '../services/craftingEngine.js';
 import { copperToWealth, wealthToCopper, formatWealth } from '../services/characterImporter.js';
@@ -163,6 +164,16 @@ export function CraftingSuite({
       selectedItem?.level ?? 0
     );
   }, [isEligibleForMaterial, selectedMaterial, selectedMaterialGrade, selectedItem]);
+
+  // Materials compatible with the selected item's equipment type
+  const availableMaterials = useMemo(() => {
+    if (!selectedItem) return [];
+    const equipType = getItemEquipmentType(selectedItem);
+    return Object.values(PRECIOUS_MATERIALS).filter(m => {
+      if (m.id === 'none') return true;
+      return !m.types || m.types.includes(equipType);
+    });
+  }, [selectedItem]);
 
   // Crafting calculations for selected item
   const itemLevel = materialDetails.effectiveLevel;
@@ -714,7 +725,7 @@ export function CraftingSuite({
                         }}
                         className="w-full p-2 bg-white border border-amber-300 rounded-lg font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                       >
-                        {Object.values(PRECIOUS_MATERIALS).map(mat => (
+                        {availableMaterials.map(mat => (
                           <option key={mat.id} value={mat.id}>
                             {mat.name}
                           </option>
@@ -1180,7 +1191,7 @@ export function CraftingSuite({
       <DiceRollerModal
         isOpen={diceModalOpen}
         onClose={() => setDiceModalOpen(false)}
-        title={`Crafting Check: ${selectedItem?.name}`}
+        title={`Crafting Check: ${materialDetails.displayName}`}
         subtitle={`Level ${itemLevel} ${itemRarity} Item • DC ${targetDC}${specialtyBonus > 0 ? ` • +${specialtyBonus} Specialty Bonus` : ''}`}
         skillName="Crafting"
         skillMod={crafterMod}
