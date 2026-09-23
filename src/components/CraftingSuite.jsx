@@ -27,7 +27,10 @@ import {
   getDailyEarnIncomeRate, 
   priceToCopper, 
   checkHasFormula,
-  extractSpellCostGp
+  extractSpellCostGp,
+  PRECIOUS_MATERIALS,
+  isMaterialEligible,
+  getPreciousMaterialDetails
 } from '../services/craftingEngine.js';
 import { copperToWealth, wealthToCopper, formatWealth } from '../services/characterImporter.js';
 import { DiceRollerModal } from './DiceRollerModal.jsx';
@@ -50,6 +53,8 @@ export function CraftingSuite({
   const [selectedImbuedSpell, setSelectedImbuedSpell] = useState('');
   const [spellTargetLevel, setSpellTargetLevel] = useState(1);
   const [extraMaterialCostGp, setExtraMaterialCostGp] = useState(0);
+  const [selectedMaterial, setSelectedMaterial] = useState('none');
+  const [selectedMaterialGrade, setSelectedMaterialGrade] = useState('standard');
 
   // Selected spell object
   const selectedSpellObj = useMemo(() => {
@@ -57,11 +62,13 @@ export function CraftingSuite({
     return spellsData.find(s => s.name === selectedImbuedSpell) || null;
   }, [selectedImbuedSpell]);
 
-  // When selectedItem changes, reset imbued spell & extra cost
+  // When selectedItem changes, reset imbued spell, extra cost, & materials
   React.useEffect(() => {
     setSelectedImbuedSpell('');
     setExtraMaterialCostGp(0);
     setSpellTargetLevel(1);
+    setSelectedMaterial('none');
+    setSelectedMaterialGrade('standard');
   }, [selectedItem?.id]);
 
   // When imbued spell or target level changes, automatically compute extra material cost
@@ -134,13 +141,36 @@ export function CraftingSuite({
     });
   }, [searchQuery, selectedCategory, craftableOnly, formulasOnly, character]);
 
+  // Material calculations
+  const isEligibleForMaterial = useMemo(() => isMaterialEligible(selectedItem), [selectedItem]);
+  const materialDetails = useMemo(() => {
+    if (!isEligibleForMaterial) {
+      return {
+        material: PRECIOUS_MATERIALS.none,
+        grade: PRECIOUS_MATERIALS.none.grades.standard,
+        effectivePriceCopper: priceToCopper(selectedItem?.price || '0 gp'),
+        effectiveLevel: selectedItem?.level ?? 0,
+        displayName: selectedItem?.name || 'Item',
+        materialTraits: [],
+        minProficiency: 0
+      };
+    }
+    return getPreciousMaterialDetails(
+      selectedMaterial,
+      selectedMaterialGrade,
+      selectedItem,
+      priceToCopper(selectedItem?.price || '0 gp'),
+      selectedItem?.level ?? 0
+    );
+  }, [isEligibleForMaterial, selectedMaterial, selectedMaterialGrade, selectedItem]);
+
   // Crafting calculations for selected item
-  const itemLevel = selectedItem?.level ?? 0;
+  const itemLevel = materialDetails.effectiveLevel;
   const itemRarity = selectedItem?.rarity || 'common';
   const targetDC = calculateCraftingDC(itemLevel, itemRarity);
   const hasFormula = checkHasFormula(selectedItem, character);
 
-  const baseItemPriceCopper = priceToCopper(selectedItem?.price || '0 gp');
+  const baseItemPriceCopper = materialDetails.effectivePriceCopper;
   const extraComponentCopper = Math.max(0, Math.round((Number(extraMaterialCostGp) || 0) * 100));
   const totalItemPriceCopper = baseItemPriceCopper + extraComponentCopper;
   const totalPriceCopper = totalItemPriceCopper * batchQuantity;
@@ -196,6 +226,10 @@ export function CraftingSuite({
     const isCrit = rollResult.finalDegree === 'criticalSuccess';
     const characterCopper = wealthToCopper(character.wealth);
 
+    const effectiveDisplayName = selectedImbuedSpell 
+      ? `${materialDetails.displayName} (${selectedImbuedSpell})`
+      : materialDetails.displayName;
+
     if (activeCheckTarget === 'instant') {
       if (isSuccess) {
         // Deduct full price (rush)
@@ -206,19 +240,16 @@ export function CraftingSuite({
         const updatedWealth = copperToWealth(characterCopper - totalPriceCopper);
         onUpdateCharacter({ ...character, wealth: updatedWealth });
 
-        const displayName = selectedImbuedSpell 
-          ? `${selectedItem.name} (${selectedImbuedSpell})`
-          : selectedItem.name;
-
         const newLog = {
           id: `craft-${Date.now()}`,
-          itemName: displayName,
+          itemName: effectiveDisplayName,
           quantity: batchQuantity,
           date: new Date().toLocaleDateString(),
           costPaid: formatWealth(copperToWealth(totalPriceCopper)),
           goldSaved: isCrit ? 'Critical Craft Mastery' : '0 gp (Instant Rush)',
           status: isCrit ? 'Completed (Critical Rush)' : 'Completed (Rush)',
-          degree: rollResult.finalDegree
+          degree: rollResult.finalDegree,
+          material: selectedMaterial !== 'none' ? `${materialDetails.material.name} (${materialDetails.grade.name})` : null
         };
         onUpdateHistory([newLog, ...craftHistory]);
       } else if (rollResult.finalDegree === 'criticalFailure') {
@@ -238,28 +269,27 @@ export function CraftingSuite({
         const updatedWealth = copperToWealth(characterCopper - rawMaterialsCopper);
         onUpdateCharacter({ ...character, wealth: updatedWealth });
 
-        const displayName = selectedImbuedSpell 
-          ? `${selectedItem.name} (${selectedImbuedSpell})`
-          : selectedItem.name;
-
         // Critical success Earn Income rate uses level + 1 (Remaster rules)
         const projectDailyRate = getDailyEarnIncomeRate(crafterLevel, crafterRank, isCrit);
+        const setupDays = hasFormula ? 1 : 2;
 
         const newProject = {
           id: `proj-${Date.now()}`,
-          itemName: displayName,
+          itemName: effectiveDisplayName,
           itemLevel,
           rarity: itemRarity,
           quantity: batchQuantity,
           totalPriceCopper,
           rawMaterialsCopper,
           remainingBalanceCopper: remainingCostCopper,
+          setupDays,
           daysWorked: 0,
           dailyReductionCopper: projectDailyRate,
           accumulatedSavingsCopper: 0,
           degree: rollResult.finalDegree,
           specialtyApplied,
-          dateStarted: new Date().toLocaleDateString()
+          dateStarted: new Date().toLocaleDateString(),
+          material: selectedMaterial !== 'none' ? `${materialDetails.material.name} (${materialDetails.grade.name})` : null
         };
         onUpdateProjects([newProject, ...downtimeProjects]);
       } else if (rollResult.finalDegree === 'criticalFailure') {
@@ -315,17 +345,22 @@ export function CraftingSuite({
     // Add to history
     const totalPaidCopper = proj.rawMaterialsCopper + remainingToPay;
     const totalSavedCopper = proj.accumulatedSavingsCopper;
+    const setupDays = proj.setupDays || 1;
+    const totalDays = setupDays + (proj.daysWorked || 0);
 
     const newLog = {
       id: `craft-${Date.now()}`,
       itemName: proj.itemName,
       quantity: proj.quantity,
       date: new Date().toLocaleDateString(),
-      daysWorked: proj.daysWorked,
+      setupDays,
+      daysWorked: proj.daysWorked || 0,
+      totalDays,
       costPaid: formatWealth(copperToWealth(totalPaidCopper)),
       goldSaved: `+${formatWealth(copperToWealth(totalSavedCopper))}`,
-      status: 'Completed (Downtime)',
-      degree: proj.degree
+      status: `Completed (Downtime • ${totalDays}d total)`,
+      degree: proj.degree,
+      material: proj.material || null
     };
     onUpdateHistory([newLog, ...craftHistory]);
   };
@@ -521,18 +556,24 @@ export function CraftingSuite({
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-forge-700">Target Item</span>
                   <h3 className="text-xl font-serif font-black text-arcane-950 flex items-center gap-2">
-                    {selectedItem.name}
+                    {materialDetails.displayName}
                   </h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
                     <span className="px-2 py-0.5 rounded bg-arcane-100 text-arcane-800 font-bold border border-arcane-300">
                       Level {itemLevel}
                     </span>
                     <span className="px-2 py-0.5 rounded bg-gold-100 text-gold-900 font-bold border border-gold-300">
-                      Price: {selectedItem.price}
+                      Price: {formatWealth(copperToWealth(baseItemPriceCopper))}
                     </span>
                     <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium capitalize border border-slate-300">
                       {itemRarity}
                     </span>
+                    {selectedMaterial !== 'none' && (
+                      <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-amber-600" />
+                        {materialDetails.material.name} ({materialDetails.grade.name})
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -638,6 +679,97 @@ export function CraftingSuite({
                   </div>
                 )}
               </div>
+
+              {/* Precious & Special Material Selection (Weapons, Armor, Shields) */}
+              {isEligibleForMaterial && (
+                <div className="bg-gradient-to-br from-amber-50 to-parchment-100 p-3.5 rounded-xl border border-amber-300 space-y-3 text-xs">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-1.5 font-serif font-bold text-amber-950">
+                      <Sparkles className="w-4 h-4 text-amber-600" />
+                      <span>Precious & Special Material (Silver, Obsidian, Skymetals)</span>
+                    </div>
+                    {selectedMaterial !== 'none' && (
+                      <span className="text-[11px] font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full border border-amber-400">
+                        {materialDetails.grade.name} {materialDetails.material.name}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Material Type Dropdown */}
+                    <div>
+                      <label className="block font-bold text-stone-800 mb-1">
+                        Select Material
+                      </label>
+                      <select
+                        value={selectedMaterial}
+                        onChange={(e) => {
+                          const matId = e.target.value;
+                          setSelectedMaterial(matId);
+                          const matObj = PRECIOUS_MATERIALS[matId];
+                          const grades = Object.keys(matObj?.grades || {});
+                          if (!grades.includes(selectedMaterialGrade)) {
+                            setSelectedMaterialGrade(grades[0] || 'standard');
+                          }
+                        }}
+                        className="w-full p-2 bg-white border border-amber-300 rounded-lg font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      >
+                        {Object.values(PRECIOUS_MATERIALS).map(mat => (
+                          <option key={mat.id} value={mat.id}>
+                            {mat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Grade Selector (if material is not 'none') */}
+                    {selectedMaterial !== 'none' ? (
+                      <div>
+                        <label className="block font-bold text-stone-800 mb-1">
+                          Material Grade
+                        </label>
+                        <select
+                          value={selectedMaterialGrade}
+                          onChange={(e) => setSelectedMaterialGrade(e.target.value)}
+                          className="w-full p-2 bg-white border border-amber-300 rounded-lg font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        >
+                          {Object.values(PRECIOUS_MATERIALS[selectedMaterial]?.grades || {}).map(g => (
+                            <option key={g.id} value={g.id}>
+                              {g.name} (Lvl {g.level}{g.armorLevel && g.armorLevel !== g.level ? ` / Armor Lvl ${g.armorLevel}` : ''})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-stone-500 italic text-[11px] pt-4">
+                        Standard mundane materials (standard item price and level).
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Material Description & Proficiency Notice */}
+                  {selectedMaterial !== 'none' && (
+                    <div className="bg-white/90 p-2.5 rounded-lg border border-amber-200 text-[11px] space-y-1.5">
+                      <p className="text-stone-700 leading-relaxed">
+                        <span className="font-bold text-stone-900">{materialDetails.material.name}:</span> {materialDetails.material.description}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-amber-100 text-[10px]">
+                        <span className="font-semibold text-stone-700">
+                          Min. Crafting: <strong className="text-arcane-900">{['Untrained', 'Trained', 'Expert', 'Master', 'Legendary'][materialDetails.minProficiency] || 'Trained'}</strong>
+                        </span>
+                        {crafterRank < materialDetails.minProficiency && (
+                          <span className="text-red-700 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-300">
+                            Prerequisite Warning: Requires {['Untrained', 'Trained', 'Expert', 'Master', 'Legendary'][materialDetails.minProficiency]} proficiency!
+                          </span>
+                        )}
+                        <span className="text-stone-500">
+                          Base Price: <strong className="font-mono text-gold-900">{formatWealth(copperToWealth(materialDetails.effectivePriceCopper))}</strong>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Formula & Remaster Requirement Check */}
               <div className="p-3 rounded-xl bg-parchment-100 border border-parchment-300 flex items-start gap-2.5 text-xs">
@@ -822,7 +954,9 @@ export function CraftingSuite({
                       <div className="flex items-center gap-2 text-xs text-parchment-600">
                         <span>Started: {proj.dateStarted}</span>
                         <span>&bull;</span>
-                        <span className="font-semibold text-forge-800">{proj.daysWorked} Days Worked</span>
+                        <span className="font-semibold text-forge-800">
+                          {(proj.setupDays || 1) + (proj.daysWorked || 0)} Total Day{((proj.setupDays || 1) + (proj.daysWorked || 0)) !== 1 ? 's' : ''} ({proj.setupDays || 1} Setup + {proj.daysWorked || 0} Downtime Worked)
+                        </span>
                         {daysToFree > 0 && (
                           <>
                             <span>&bull;</span>

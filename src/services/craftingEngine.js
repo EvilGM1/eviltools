@@ -203,3 +203,371 @@ export function extractSpellCostGp(spell, targetLevel = 1) {
 
   return 0;
 }
+
+/**
+ * Precious Materials Dictionary (Pathfinder 2e Remaster + Special Materials)
+ * Prices stored in copper (1 gp = 100 cp)
+ */
+export const PRECIOUS_MATERIALS = {
+  none: {
+    id: 'none',
+    name: 'Standard (Iron / Steel / Wood / Leather)',
+    traits: [],
+    grades: {
+      standard: {
+        id: 'standard',
+        name: 'Standard',
+        level: 0,
+        weaponPrice: null,
+        armorPrice: null,
+        shieldPrice: null,
+        minProficiency: 0
+      }
+    }
+  },
+  silver: {
+    id: 'silver',
+    name: 'Silver',
+    description: 'Exploits weaknesses of werecreatures and undead, and bypasses devil resistances.',
+    traits: ['silver'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      low: {
+        id: 'low',
+        name: 'Low-Grade',
+        level: 2,
+        weaponPrice: 4000, // 40 gp
+        armorPrice: 14000, // 140 gp (Lvl 5 for armor)
+        armorLevel: 5,
+        shieldPrice: 4000,
+        minProficiency: 2 // Expert
+      },
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 10,
+        weaponPrice: 88000, // 880 gp
+        armorPrice: 120000, // 1,200 gp (Lvl 11 for armor)
+        armorLevel: 11,
+        shieldPrice: 44000,
+        minProficiency: 3 // Master
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 16,
+        weaponPrice: 900000, // 9,000 gp
+        armorPrice: 1400000, // 14,000 gp (Lvl 17 for armor)
+        armorLevel: 17,
+        shieldPrice: 900000,
+        minProficiency: 4 // Legendary
+      }
+    }
+  },
+  obsidian: {
+    id: 'obsidian',
+    name: 'Obsidian (Volcanic Glass)',
+    description: 'Honed to a microscopic razor edge. Yields deadly sharp blades and non-metallic protective stone armor.',
+    traits: ['obsidian'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      low: {
+        id: 'low',
+        name: 'Low-Grade',
+        level: 2,
+        weaponPrice: 3500, // 35 gp
+        armorPrice: 12000, // 120 gp (Lvl 5 for armor)
+        armorLevel: 5,
+        shieldPrice: 3500,
+        minProficiency: 2 // Expert
+      },
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 9,
+        weaponPrice: 70000, // 700 gp
+        armorPrice: 100000, // 1,000 gp (Lvl 11 for armor)
+        armorLevel: 11,
+        shieldPrice: 40000,
+        minProficiency: 3 // Master
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 16,
+        weaponPrice: 800000, // 8,000 gp
+        armorPrice: 1300000, // 13,000 gp (Lvl 17 for armor)
+        armorLevel: 17,
+        shieldPrice: 800000,
+        minProficiency: 4 // Legendary
+      }
+    }
+  },
+  'cold-iron': {
+    id: 'cold-iron',
+    name: 'Cold Iron',
+    description: 'Iron mined deep underground and forged at low heat; deals severe harm to demons and fey.',
+    traits: ['cold-iron'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      low: {
+        id: 'low',
+        name: 'Low-Grade',
+        level: 2,
+        weaponPrice: 4000, // 40 gp
+        armorPrice: 14000, // 140 gp (Lvl 5 for armor)
+        armorLevel: 5,
+        shieldPrice: 4000,
+        minProficiency: 2
+      },
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 10,
+        weaponPrice: 88000, // 880 gp
+        armorPrice: 120000, // 1,200 gp (Lvl 11 for armor)
+        armorLevel: 11,
+        shieldPrice: 44000,
+        minProficiency: 3
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 16,
+        weaponPrice: 900000, // 9,000 gp
+        armorPrice: 1400000, // 14,000 gp (Lvl 17 for armor)
+        armorLevel: 17,
+        shieldPrice: 900000,
+        minProficiency: 4
+      }
+    }
+  },
+  adamantine: {
+    id: 'adamantine',
+    name: 'Adamantine',
+    description: 'Ultra-dense black skymetal. Weapons slice through object hardness; armor dampens critical impacts.',
+    traits: ['adamantine'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 11,
+        weaponPrice: 140000, // 1,400 gp
+        armorPrice: 160000, // 1,600 gp (Lvl 12 for armor)
+        armorLevel: 12,
+        shieldPrice: 140000,
+        minProficiency: 3
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 17,
+        weaponPrice: 1350000, // 13,500 gp
+        armorPrice: 2100000, // 21,000 gp (Lvl 18 for armor)
+        armorLevel: 18,
+        shieldPrice: 1350000,
+        minProficiency: 4
+      }
+    }
+  },
+  dawnsilver: {
+    id: 'dawnsilver',
+    name: 'Dawnsilver (Mithral)',
+    description: 'Featherlight gleaming silver metal. Reduces bulk and strength requirements for armor.',
+    traits: ['dawnsilver', 'mithral'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 11,
+        weaponPrice: 140000, // 1,400 gp
+        armorPrice: 160000, // 1,600 gp (Lvl 12 for armor)
+        armorLevel: 12,
+        shieldPrice: 140000,
+        minProficiency: 3
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 17,
+        weaponPrice: 1350000, // 13,500 gp
+        armorPrice: 2100000, // 21,000 gp (Lvl 18 for armor)
+        armorLevel: 18,
+        shieldPrice: 1350000,
+        minProficiency: 4
+      }
+    }
+  },
+  darkwood: {
+    id: 'darkwood',
+    name: 'Darkwood (Duskwood)',
+    description: 'Wood that rivals forged steel in tensile strength while floating like cork; favored for bows and wooden shields.',
+    traits: ['darkwood'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 8,
+        weaponPrice: 44000, // 440 gp
+        armorPrice: 60000, // 600 gp (Lvl 9 for armor)
+        armorLevel: 9,
+        shieldPrice: 44000,
+        minProficiency: 3
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 15,
+        weaponPrice: 580000, // 5,800 gp
+        armorPrice: 900000, // 9,000 gp (Lvl 16 for armor)
+        armorLevel: 16,
+        shieldPrice: 580000,
+        minProficiency: 4
+      }
+    }
+  },
+  dragonhide: {
+    id: 'dragonhide',
+    name: 'Dragonhide',
+    description: 'Impenetrable cured scales harvested from true dragons. Non-metal with inherent elemental resistance.',
+    traits: ['dragonhide'],
+    types: ['armor', 'shield'],
+    grades: {
+      standard: {
+        id: 'standard',
+        name: 'Standard-Grade',
+        level: 8,
+        weaponPrice: 44000,
+        armorPrice: 44000, // 440 gp
+        armorLevel: 8,
+        shieldPrice: 44000,
+        minProficiency: 3
+      },
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 15,
+        weaponPrice: 580000,
+        armorPrice: 580000, // 5,800 gp
+        armorLevel: 15,
+        shieldPrice: 580000,
+        minProficiency: 4
+      }
+    }
+  },
+  orichalcum: {
+    id: 'orichalcum',
+    name: 'Orichalcum',
+    description: 'Inscrutable coppery skymetal saturated with planar time. Grants extra runes and rapid initiative.',
+    traits: ['orichalcum'],
+    types: ['weapon', 'armor', 'shield'],
+    grades: {
+      high: {
+        id: 'high',
+        name: 'High-Grade',
+        level: 17,
+        weaponPrice: 1800000, // 18,000 gp
+        armorPrice: 2200000, // 22,000 gp (Lvl 18 for armor)
+        armorLevel: 18,
+        shieldPrice: 1800000,
+        minProficiency: 4
+      }
+    }
+  }
+};
+
+/**
+ * Checks if an item is eligible for precious material selection (weapons, armors, shields).
+ */
+export function isMaterialEligible(item) {
+  if (!item) return false;
+  const type = (item.type || '').toLowerCase();
+  const cat = (item.category || '').toLowerCase();
+  const traits = (item.traits || []).map(t => String(t).toLowerCase());
+  const name = (item.name || '').toLowerCase();
+
+  // Exclude wands and scrolls
+  if (item.isWand || item.isScroll || traits.includes('wand') || traits.includes('scroll')) return false;
+
+  if (type === 'weapon' || cat === 'weapon' || traits.includes('weapon')) return true;
+  if (type === 'armor' || cat === 'armor' || traits.includes('armor')) return true;
+  if (type === 'shield' || cat === 'shield' || traits.includes('shield') || name.includes('shield')) return true;
+
+  return false;
+}
+
+/**
+ * Returns item classification: 'weapon', 'armor', or 'shield'
+ */
+export function getItemEquipmentType(item) {
+  if (!item) return 'weapon';
+  const type = (item.type || '').toLowerCase();
+  const cat = (item.category || '').toLowerCase();
+  const traits = (item.traits || []).map(t => String(t).toLowerCase());
+  const name = (item.name || '').toLowerCase();
+
+  if (type === 'shield' || cat === 'shield' || traits.includes('shield') || name.includes('shield')) {
+    return 'shield';
+  }
+  if (type === 'armor' || cat === 'armor' || traits.includes('armor')) {
+    return 'armor';
+  }
+  return 'weapon';
+}
+
+/**
+ * Computes precious material attributes for an item.
+ */
+export function getPreciousMaterialDetails(materialId = 'none', gradeId = 'standard', item, basePriceCopper = 0, baseLevel = 0) {
+  const material = PRECIOUS_MATERIALS[materialId] || PRECIOUS_MATERIALS.none;
+  if (materialId === 'none') {
+    return {
+      material,
+      grade: material.grades.standard,
+      effectivePriceCopper: basePriceCopper,
+      effectiveLevel: baseLevel,
+      displayName: item?.name || 'Item',
+      materialTraits: [],
+      minProficiency: 0
+    };
+  }
+
+  // Find grade
+  const availableGrades = Object.values(material.grades);
+  const grade = material.grades[gradeId] || availableGrades[0];
+  const equipType = getItemEquipmentType(item);
+
+  // Grade level
+  let gradeLevel = grade.level;
+  if (equipType === 'armor' && grade.armorLevel) {
+    gradeLevel = grade.armorLevel;
+  }
+  const effectiveLevel = Math.max(Number(baseLevel) || 0, gradeLevel);
+
+  // Grade price
+  let gradePrice = grade.weaponPrice;
+  if (equipType === 'armor' && grade.armorPrice) {
+    gradePrice = grade.armorPrice;
+  } else if (equipType === 'shield' && grade.shieldPrice) {
+    gradePrice = grade.shieldPrice;
+  }
+  const effectivePriceCopper = gradePrice !== null ? Math.max(basePriceCopper, gradePrice) : basePriceCopper;
+
+  // Formatted display name
+  const cleanBaseName = item?.name || 'Item';
+  const displayName = `${material.name.split(' ')[0]} ${cleanBaseName} (${grade.name})`;
+
+  return {
+    material,
+    grade,
+    effectivePriceCopper,
+    effectiveLevel,
+    displayName,
+    materialTraits: material.traits || [],
+    minProficiency: grade.minProficiency || 0
+  };
+}
+
