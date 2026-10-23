@@ -28,6 +28,7 @@ import {
   priceToCopper, 
   checkHasFormula,
   extractSpellCostGp,
+  getFormulaPriceCopper,
   PRECIOUS_MATERIALS,
   isMaterialEligible,
   getItemEquipmentType,
@@ -393,11 +394,11 @@ export function CraftingSuite({
       {/* Top Banner / Crafter Header */}
       <div className="bg-gradient-to-r from-forge-950 via-arcane-950 to-forge-900 border-2 border-forge-600 rounded-2xl p-4 sm:p-6 text-parchment-100 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-forge-800 border-2 border-orange-400 flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 rounded-xl bg-forge-800 border-2 border-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
             <Hammer className="w-6 h-6 text-orange-300" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-serif font-black text-parchment-100 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-serif font-black text-parchment-100 flex flex-wrap items-center gap-2">
               EvilCraft Workbench
               <span className="text-xs font-sans px-2.5 py-0.5 rounded-full bg-forge-900 border border-orange-500 text-orange-300 font-bold">
                 PF2e Remaster
@@ -783,23 +784,102 @@ export function CraftingSuite({
               )}
 
               {/* Formula & Remaster Requirement Check */}
-              <div className="p-3 rounded-xl bg-parchment-100 border border-parchment-300 flex items-start gap-2.5 text-xs">
-                {hasFormula ? (
-                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                )}
-                <div>
-                  <span className="font-bold text-stone-900">
-                    {hasFormula ? 'Known Formula in Formula Book' : 'Formula Not in Character Records'}
-                  </span>
-                  <p className="text-stone-600 mt-0.5 leading-relaxed">
-                    {hasFormula 
-                      ? 'You possess the formula. Initial setup takes 1 day of crafting preparation.'
-                      : 'Under Remaster RAW, crafting an item without a known formula requires 2 days of initial setup and GM approval (or formula purchase).'
-                    }
-                  </p>
+              <div className="p-3 rounded-xl bg-parchment-100 border border-parchment-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start gap-2.5">
+                  {hasFormula ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <span className="font-bold text-stone-900">
+                      {hasFormula ? 'Known Formula in Formula Book' : 'Formula Not in Character Records'}
+                    </span>
+                    <p className="text-stone-600 mt-0.5 leading-relaxed">
+                      {hasFormula 
+                        ? 'You possess the formula. Initial setup takes 1 day of crafting preparation.'
+                        : 'Under Remaster RAW, crafting an item without a known formula requires 2 days of initial setup (or you can add/buy the formula).'
+                      }
+                    </p>
+                  </div>
                 </div>
+
+                {onUpdateCharacter && selectedItem && (
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0 pl-7 sm:pl-0">
+                    {!hasFormula ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentFormulas = character?.formulas || [];
+                            onUpdateCharacter({
+                              ...character,
+                              formulas: [...currentFormulas, selectedItem.name]
+                            });
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-arcane-800 hover:bg-arcane-700 text-gold-300 font-bold text-[11px] flex items-center gap-1 shadow-sm transition-colors"
+                          title={`Add ${selectedItem.name} to your Formula Book for free`}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Learn Formula (Free)
+                        </button>
+                        {(() => {
+                          const formulaCostCopper = getFormulaPriceCopper(effectiveItemLevel);
+                          const currentCopper = wealthToCopper(character?.wealth);
+                          const canAffordFormula = currentCopper >= formulaCostCopper;
+                          return (
+                            <button
+                              type="button"
+                              disabled={!canAffordFormula}
+                              onClick={() => {
+                                if (!canAffordFormula) return;
+                                const currentFormulas = character?.formulas || [];
+                                onUpdateCharacter({
+                                  ...character,
+                                  wealth: copperToWealth(currentCopper - formulaCostCopper),
+                                  formulas: [...currentFormulas, selectedItem.name]
+                                });
+                              }}
+                              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] flex items-center gap-1 border transition-colors ${
+                                canAffordFormula
+                                  ? 'bg-gold-500/20 hover:bg-gold-500/30 text-gold-950 border-gold-500'
+                                  : 'bg-stone-200 text-stone-400 border-stone-300 cursor-not-allowed'
+                              }`}
+                              title={
+                                canAffordFormula
+                                  ? `Purchase Lv.${effectiveItemLevel} formula for ${formatWealth(copperToWealth(formulaCostCopper))}`
+                                  : `Insufficient funds (${formatWealth(copperToWealth(formulaCostCopper))} required)`
+                              }
+                            >
+                              <Coins className="w-3.5 h-3.5 text-gold-700" />
+                              Buy ({formatWealth(copperToWealth(formulaCostCopper))})
+                            </button>
+                          );
+                        })()}
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const targetLower = selectedItem.name.toLowerCase().trim();
+                          const nextFormulas = (character?.formulas || []).filter(f => {
+                            const fLower = f.toLowerCase().trim();
+                            return !(targetLower.includes(fLower) || fLower.includes(targetLower));
+                          });
+                          onUpdateCharacter({
+                            ...character,
+                            formulas: nextFormulas
+                          });
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-white hover:bg-red-50 text-stone-600 hover:text-red-700 border border-parchment-300 hover:border-red-300 font-semibold text-[11px] flex items-center gap-1 transition-colors"
+                        title="Remove formula from character Formula Book"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Remove Formula
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Specialty Crafting & Trade Match Toggle */}

@@ -321,11 +321,11 @@ export function ScribeSuite({
       {/* Top Banner / Scribe Header */}
       <div className="bg-gradient-to-r from-arcane-950 via-purple-950 to-arcane-900 border-2 border-arcane-600 rounded-2xl p-4 sm:p-6 text-parchment-100 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-arcane-800 border-2 border-purple-400 flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 rounded-xl bg-arcane-800 border-2 border-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
             <BookOpen className="w-6 h-6 text-purple-300" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-serif font-black text-parchment-100 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-serif font-black text-parchment-100 flex flex-wrap items-center gap-2">
               EvilScribe Grimoire
               <span className="text-xs font-sans px-2.5 py-0.5 rounded-full bg-purple-900 border border-purple-500 text-purple-300 font-bold">
                 {casterTypeLabel}

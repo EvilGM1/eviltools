@@ -132,6 +132,7 @@ function parseEvilToolsCharacter(char, root = {}) {
     source: 'eviltools',
     avatar: char.avatar || '',
     wealth: { pp, gp, sp, cp, totalCopper },
+    attributes: char.attributes ? { ...char.attributes } : undefined,
     skills: {
       crafting: { ...(char.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
       performance: { ...(char.skills?.performance || { rank: 0, mod: 0, rankName: 'Untrained' }) },
@@ -240,6 +241,7 @@ function parsePathbuilderJSON(b) {
   const chaMod = getMod(abilities.cha || 10);
   const dexMod = getMod(abilities.dex || 10);
   const strMod = getMod(abilities.str || 10);
+  const conMod = getMod(abilities.con || 10);
 
   const profs = b.proficiencies || {};
 
@@ -250,7 +252,7 @@ function parsePathbuilderJSON(b) {
     const profBonus = rank > 0 ? (rank * 2) + level : 0;
     const itemBonus = b.mods?.[skillKey.charAt(0).toUpperCase() + skillKey.slice(1)]?.['Item Bonus'] || 0;
     const totalMod = profBonus + abilityMod + itemBonus;
-    return { rank, mod: totalMod, rankName: RANK_NAMES[rank] };
+    return { rank, mod: totalMod, itemBonus, rankName: RANK_NAMES[rank] };
   };
 
   const skills = {
@@ -369,6 +371,14 @@ function parsePathbuilderJSON(b) {
     source: 'pathbuilder',
     avatar: '',
     wealth,
+    attributes: {
+      str: strMod,
+      dex: dexMod,
+      con: conMod,
+      int: intMod,
+      wis: wisMod,
+      cha: chaMod
+    },
     skills,
     loreSkills,
     feats,
@@ -402,7 +412,7 @@ function parseFoundryPF2eJSON(f) {
     const itemBonus = Number(sk.item) || 0;
     const totalMod = sk.value ?? (profBonus + abilityMod + itemBonus);
 
-    return { rank, mod: totalMod, rankName: RANK_NAMES[rank] };
+    return { rank, mod: totalMod, itemBonus, rankName: RANK_NAMES[rank] };
   };
 
   const skills = {
@@ -525,6 +535,14 @@ function parseFoundryPF2eJSON(f) {
     source: 'foundry',
     avatar: img,
     wealth,
+    attributes: {
+      str: getAbilityMod('str'),
+      dex: getAbilityMod('dex'),
+      con: getAbilityMod('con'),
+      int: getAbilityMod('int'),
+      wis: getAbilityMod('wis'),
+      cha: getAbilityMod('cha')
+    },
     skills,
     loreSkills,
     feats,

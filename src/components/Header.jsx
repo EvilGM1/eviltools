@@ -32,14 +32,14 @@ export function Header({
   const activeChar = characters.find(c => c.id === activeCharacterId) || characters[0];
 
   return (
-    <header className="bg-gradient-to-r from-arcane-950 via-arcane-900 to-forge-950 text-parchment-100 border-b-2 border-gold-600 shadow-xl sticky top-0 z-30">
+    <header className="w-full bg-gradient-to-r from-arcane-950 via-arcane-900 to-forge-950 text-parchment-100 border-b-2 border-gold-600 shadow-xl sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         {/* Top Branding & Character Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:flex-wrap lg:flex-nowrap items-center justify-between gap-3 sm:gap-4">
           
           {/* Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-forge-700 to-arcane-700 border-2 border-gold-400 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-forge-700 to-arcane-700 border-2 border-gold-400 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform flex-shrink-0">
               <Hammer className="w-5 h-5 text-gold-300 transform -rotate-12" />
               <BookOpen className="w-5 h-5 text-arcane-100 -ml-2" />
             </div>
@@ -54,7 +54,7 @@ export function Header({
           </div>
 
           {/* Character Selector & Actions */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-arcane-900/80 p-2 rounded-xl border border-arcane-700/60 shadow-inner">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-arcane-900/80 p-2 rounded-xl border border-arcane-700/60 shadow-inner max-w-full">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-gold-400" />
               <select
@@ -176,53 +176,73 @@ export function Header({
           <button
             type="button"
             onClick={() => setActiveTab('crafting')}
-            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
+            title="EvilCraft (Crafting)"
+            className={`flex-1 min-w-0 py-2.5 px-2 sm:px-3 lg:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-sm lg:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
               activeTab === 'crafting'
                 ? 'bg-parchment-100 text-forge-900 border-gold-500 shadow-lg'
                 : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
             }`}
           >
-            <Hammer className={`w-4 h-4 ${activeTab === 'crafting' ? 'text-forge-700' : 'text-parchment-400'}`} />
-            <span className="truncate">EvilCraft (Crafting)</span>
+            <Hammer className={`w-4 h-4 flex-shrink-0 ${activeTab === 'crafting' ? 'text-forge-700' : 'text-parchment-400'}`} />
+            <span className="truncate">
+              <span className="hidden sm:inline">EvilCraft</span>
+              <span className="sm:hidden">Craft</span>
+              <span className="hidden xl:inline text-xs font-sans font-normal opacity-80 ml-1">(Crafting)</span>
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('scribe')}
-            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
+            title="EvilScribe (Spell Learning)"
+            className={`flex-1 min-w-0 py-2.5 px-2 sm:px-3 lg:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-sm lg:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
               activeTab === 'scribe'
                 ? 'bg-parchment-100 text-arcane-950 border-gold-500 shadow-lg'
                 : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
             }`}
           >
-            <BookOpen className={`w-4 h-4 ${activeTab === 'scribe' ? 'text-arcane-600' : 'text-parchment-400'}`} />
-            <span className="truncate">EvilScribe (Spell Learning)</span>
+            <BookOpen className={`w-4 h-4 flex-shrink-0 ${activeTab === 'scribe' ? 'text-arcane-600' : 'text-parchment-400'}`} />
+            <span className="truncate">
+              <span className="hidden sm:inline">EvilScribe</span>
+              <span className="sm:hidden">Scribe</span>
+              <span className="hidden xl:inline text-xs font-sans font-normal opacity-80 ml-1">(Spell Learning)</span>
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('earnings')}
-            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
+            title="EvilEarnings (Earn Income)"
+            className={`flex-1 min-w-0 py-2.5 px-2 sm:px-3 lg:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-sm lg:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
               activeTab === 'earnings'
                 ? 'bg-parchment-100 text-emerald-950 border-gold-500 shadow-lg'
                 : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
             }`}
           >
-            <Coins className={`w-4 h-4 ${activeTab === 'earnings' ? 'text-emerald-600' : 'text-parchment-400'}`} />
-            <span className="truncate">EvilEarnings (Earn Income)</span>
+            <Coins className={`w-4 h-4 flex-shrink-0 ${activeTab === 'earnings' ? 'text-emerald-600' : 'text-parchment-400'}`} />
+            <span className="truncate">
+              <span className="hidden sm:inline">EvilEarnings</span>
+              <span className="sm:hidden">Earnings</span>
+              <span className="hidden xl:inline text-xs font-sans font-normal opacity-80 ml-1">(Earn Income)</span>
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('emporium')}
-            className={`flex-1 py-2.5 px-2 sm:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
+            title="EvilEmporium (Merchant Generator)"
+            className={`flex-1 min-w-0 py-2.5 px-2 sm:px-3 lg:px-4 rounded-t-xl font-serif font-bold text-xs sm:text-sm lg:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all border-t-2 border-x-2 ${
               activeTab === 'emporium'
                 ? 'bg-parchment-100 text-amber-950 border-gold-500 shadow-lg'
                 : 'bg-arcane-950/70 text-parchment-400 hover:text-parchment-200 border-transparent hover:bg-arcane-900'
             }`}
           >
-            <Store className={`w-4 h-4 ${activeTab === 'emporium' ? 'text-amber-600' : 'text-parchment-400'}`} />
-            <span className="truncate">EvilEmporium (Merchant Generator)</span>
+            <Store className={`w-4 h-4 flex-shrink-0 ${activeTab === 'emporium' ? 'text-amber-600' : 'text-parchment-400'}`} />
+            <span className="truncate">
+              <span className="hidden sm:inline">EvilEmporium</span>
+              <span className="sm:hidden">Emporium</span>
+              <span className="hidden xl:inline text-xs font-sans font-normal opacity-80 ml-1">(Merchant Generator)</span>
+            </span>
           </button>
         </div>
       </div>

@@ -17,6 +17,38 @@ export const RARITY_DC_MODIFIERS = {
 };
 
 /**
+ * PF2e Remaster Formula Prices by Item Level in Copper (Player Core Table 6-14)
+ */
+export const FORMULA_PRICE_COPPER_BY_LEVEL = {
+  0: 50,      // 5 sp
+  1: 100,     // 1 gp
+  2: 200,     // 2 gp
+  3: 300,     // 3 gp
+  4: 500,     // 5 gp
+  5: 800,     // 8 gp
+  6: 1300,    // 13 gp
+  7: 1800,    // 18 gp
+  8: 2500,    // 25 gp
+  9: 3500,    // 35 gp
+  10: 5000,   // 50 gp
+  11: 7000,   // 70 gp
+  12: 10000,  // 100 gp
+  13: 15000,  // 150 gp
+  14: 22500,  // 225 gp
+  15: 32500,  // 325 gp
+  16: 50000,  // 500 gp
+  17: 75000,  // 750 gp
+  18: 120000, // 1,200 gp
+  19: 200000, // 2,000 gp
+  20: 350000  // 3,500 gp
+};
+
+export function getFormulaPriceCopper(level = 0) {
+  const safeLevel = Math.max(0, Math.min(20, Number(level) || 0));
+  return FORMULA_PRICE_COPPER_BY_LEVEL[safeLevel] ?? 100;
+}
+
+/**
  * Earn Income Table (daily copper reduction by crafter level & proficiency)
  * [Untrained, Trained, Expert, Master, Legendary]
  */

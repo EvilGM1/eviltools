@@ -18,8 +18,9 @@ const DEFAULT_CHARACTERS = [
     characterClass: 'Wizard',
     source: 'preset',
     wealth: { pp: 0, gp: 45, sp: 8, cp: 0 },
+    attributes: { str: 0, dex: 2, con: 2, int: 4, wis: 1, cha: 1 },
     skills: {
-      crafting: { rank: 1, mod: 9, rankName: 'Trained' },
+      crafting: { rank: 1, mod: 11, rankName: 'Trained' },
       performance: { rank: 0, mod: 1, rankName: 'Untrained' },
       arcana: { rank: 2, mod: 13, rankName: 'Expert' },
       nature: { rank: 0, mod: 1, rankName: 'Untrained' },
@@ -68,11 +69,12 @@ const DEFAULT_CHARACTERS = [
     characterClass: 'Occult Witch',
     source: 'preset',
     wealth: { pp: 0, gp: 62, sp: 5, cp: 0 },
+    attributes: { str: -1, dex: 2, con: 2, int: 4, wis: 2, cha: 2 },
     skills: {
-      crafting: { rank: 1, mod: 9, rankName: 'Trained' },
+      crafting: { rank: 1, mod: 11, rankName: 'Trained' },
       performance: { rank: 1, mod: 9, rankName: 'Trained' },
-      arcana: { rank: 0, mod: 2, rankName: 'Untrained' },
-      nature: { rank: 0, mod: 1, rankName: 'Untrained' },
+      arcana: { rank: 0, mod: 4, rankName: 'Untrained' },
+      nature: { rank: 0, mod: 2, rankName: 'Untrained' },
       occultism: { rank: 2, mod: 13, rankName: 'Expert' },
       religion: { rank: 1, mod: 9, rankName: 'Trained' }
     },
@@ -117,13 +119,14 @@ const DEFAULT_CHARACTERS = [
     characterClass: 'Runesmith / Crafter',
     source: 'preset',
     wealth: { pp: 0, gp: 88, sp: 0, cp: 0 },
+    attributes: { str: 2, dex: 1, con: 3, int: 4, wis: 1, cha: 0 },
     skills: {
       crafting: { rank: 2, mod: 13, rankName: 'Expert' },
       performance: { rank: 0, mod: 0, rankName: 'Untrained' },
-      arcana: { rank: 1, mod: 9, rankName: 'Trained' },
-      nature: { rank: 0, mod: 0, rankName: 'Untrained' },
-      occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
-      religion: { rank: 0, mod: 0, rankName: 'Untrained' }
+      arcana: { rank: 1, mod: 11, rankName: 'Trained' },
+      nature: { rank: 0, mod: 1, rankName: 'Untrained' },
+      occultism: { rank: 0, mod: 4, rankName: 'Untrained' },
+      religion: { rank: 0, mod: 1, rankName: 'Untrained' }
     },
     loreSkills: [
       { id: 'lore-sylor-1', name: 'Blacksmithing Lore', rank: 2, mod: 13, rankName: 'Expert' },
@@ -356,13 +359,14 @@ export function App() {
       characterClass: 'Wizard',
       source: 'custom',
       wealth: { pp: 0, gp: 15, sp: 0, cp: 0 },
+      attributes: { str: 0, dex: 2, con: 1, int: 4, wis: 1, cha: 0 },
       skills: {
-        crafting: { rank: 1, mod: 5, rankName: 'Trained' },
-        performance: { rank: 0, mod: 0, rankName: 'Untrained' },
-        arcana: { rank: 1, mod: 5, rankName: 'Trained' },
-        nature: { rank: 0, mod: 0, rankName: 'Untrained' },
-        occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
-        religion: { rank: 0, mod: 0, rankName: 'Untrained' }
+        crafting: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained' },
+        performance: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained' },
+        arcana: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained' },
+        nature: { rank: 0, mod: 1, itemBonus: 0, rankName: 'Untrained' },
+        occultism: { rank: 0, mod: 4, itemBonus: 0, rankName: 'Untrained' },
+        religion: { rank: 0, mod: 1, itemBonus: 0, rankName: 'Untrained' }
       },
       loreSkills: [],
       feats: {
@@ -399,13 +403,14 @@ export function App() {
           characterClass: 'Adventurer',
           source: 'custom',
           wealth: { pp: 0, gp: 15, sp: 0, cp: 0 },
+          attributes: { str: 0, dex: 2, con: 1, int: 4, wis: 1, cha: 0 },
           skills: {
-            crafting: { rank: 1, mod: 5, rankName: 'Trained' },
-            performance: { rank: 0, mod: 0, rankName: 'Untrained' },
-            arcana: { rank: 1, mod: 5, rankName: 'Trained' },
-            nature: { rank: 0, mod: 0, rankName: 'Untrained' },
-            occultism: { rank: 0, mod: 0, rankName: 'Untrained' },
-            religion: { rank: 0, mod: 0, rankName: 'Untrained' }
+            crafting: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained' },
+            performance: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained' },
+            arcana: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained' },
+            nature: { rank: 0, mod: 1, itemBonus: 0, rankName: 'Untrained' },
+            occultism: { rank: 0, mod: 4, itemBonus: 0, rankName: 'Untrained' },
+            religion: { rank: 0, mod: 1, itemBonus: 0, rankName: 'Untrained' }
           },
           loreSkills: [],
           feats: {},
@@ -429,7 +434,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-parchment-100 text-stone-900 flex flex-col font-sans selection:bg-gold-500 selection:text-white">
+    <div className="min-h-screen w-full overflow-x-hidden bg-parchment-100 text-stone-900 flex flex-col font-sans selection:bg-gold-500 selection:text-white">
       {/* Header Bar */}
       <Header
         activeTab={activeTab}

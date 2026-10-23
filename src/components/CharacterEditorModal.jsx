@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save, Shield, Hammer, BookOpen, Plus, Trash2, Coins, Sparkles, Wand2, Download } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Save, Shield, Hammer, BookOpen, Plus, Trash2, Coins, Sparkles, Wand2, Download, Search, Check, Sliders, RotateCcw } from 'lucide-react';
 import { RANK_NAMES, wealthToCopper, copperToWealth, exportCharacterJSON } from '../services/characterImporter.js';
+import { itemsIndex as itemsData } from '../services/compendiumLoader.js';
 
 export const PF2E_CLASSES = [
   'Alchemist',
@@ -58,6 +59,103 @@ export const TRADITION_OPTIONS = [
   { value: 'none', label: 'None / Non-Scribing', desc: 'Crafters, Martials & Spontaneous Casters (Sorcerer, Bard, etc.)' }
 ];
 
+export const ATTRIBUTE_META = [
+  { key: 'str', label: 'STR', full: 'Strength', note: 'Melee & Athletics' },
+  { key: 'dex', label: 'DEX', full: 'Dexterity', note: 'AC, Reflex & Finesse' },
+  { key: 'con', label: 'CON', full: 'Constitution', note: 'HP & Fortitude' },
+  { key: 'int', label: 'INT', full: 'Intelligence', note: 'Crafting, Arcana, Occultism, Lore', highlight: true },
+  { key: 'wis', label: 'WIS', full: 'Wisdom', note: 'Nature, Religion & Will', highlight: true },
+  { key: 'cha', label: 'CHA', full: 'Charisma', note: 'Performance & Social', highlight: true }
+];
+
+export const SKILL_ATTR_MAP = {
+  crafting: { attr: 'int', label: 'INT' },
+  arcana: { attr: 'int', label: 'INT' },
+  occultism: { attr: 'int', label: 'INT' },
+  nature: { attr: 'wis', label: 'WIS' },
+  religion: { attr: 'wis', label: 'WIS' },
+  performance: { attr: 'cha', label: 'CHA' }
+};
+
+export function getClassDefaultAttributes(cls = 'Wizard') {
+  const c = (cls || '').toLowerCase();
+  if (['wizard', 'witch', 'alchemist', 'inventor', 'investigator', 'runesmith', 'commander', 'necromancer', 'magus', 'psychic'].includes(c)) {
+    return { str: 0, dex: 2, con: 2, int: 4, wis: 1, cha: 0 };
+  }
+  if (['cleric', 'druid', 'animist', 'ranger', 'monk'].includes(c)) {
+    return { str: 1, dex: 2, con: 2, int: 1, wis: 4, cha: 0 };
+  }
+  if (['bard', 'sorcerer', 'oracle', 'summoner', 'thaumaturge', 'swashbuckler'].includes(c)) {
+    return { str: 0, dex: 2, con: 2, int: 1, wis: 0, cha: 4 };
+  }
+  if (['rogue', 'gunslinger'].includes(c)) {
+    return { str: 0, dex: 4, con: 2, int: 2, wis: 1, cha: 0 };
+  }
+  return { str: 4, dex: 1, con: 3, int: 1, wis: 0, cha: 0 };
+}
+
+export function inferCharacterAttributes(character, parsedClass = 'Wizard') {
+  if (character?.attributes && typeof character.attributes.int === 'number') {
+    return {
+      str: Number(character.attributes.str ?? 0),
+      dex: Number(character.attributes.dex ?? 1),
+      con: Number(character.attributes.con ?? 1),
+      int: Number(character.attributes.int ?? 4),
+      wis: Number(character.attributes.wis ?? 1),
+      cha: Number(character.attributes.cha ?? 0)
+    };
+  }
+
+  const defaults = getClassDefaultAttributes(parsedClass);
+  const lvl = Number(character?.level) || 1;
+  const sk = character?.skills || {};
+
+  const inferFromSkill = (skillObj, fallback) => {
+    if (!skillObj) return fallback;
+    const r = Number(skillObj.rank) || 0;
+    const m = Number(skillObj.mod) || 0;
+    const item = Number(skillObj.itemBonus) || 0;
+    if (r > 0) {
+      return Math.max(-3, Math.min(10, m - (r * 2 + lvl) - item));
+    }
+    return fallback;
+  };
+
+  const intInferred = sk.crafting?.rank > 0
+    ? inferFromSkill(sk.crafting, defaults.int)
+    : sk.arcana?.rank > 0
+      ? inferFromSkill(sk.arcana, defaults.int)
+      : defaults.int;
+
+  const wisInferred = sk.nature?.rank > 0
+    ? inferFromSkill(sk.nature, defaults.wis)
+    : sk.religion?.rank > 0
+      ? inferFromSkill(sk.religion, defaults.wis)
+      : defaults.wis;
+
+  const chaInferred = sk.performance?.rank > 0
+    ? inferFromSkill(sk.performance, defaults.cha)
+    : defaults.cha;
+
+  return {
+    str: defaults.str,
+    dex: defaults.dex,
+    con: defaults.con,
+    int: intInferred,
+    wis: wisInferred,
+    cha: chaInferred
+  };
+}
+
+export function computeSkillMod(rank, level, attrMod, itemBonus = 0) {
+  const r = Number(rank) || 0;
+  const lvl = Math.max(1, Math.min(20, Number(level) || 1));
+  const a = Number(attrMod) || 0;
+  const item = Number(itemBonus) || 0;
+  const profBonus = r > 0 ? (r * 2) + lvl : 0;
+  return profBonus + a + item;
+}
+
 export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
   if (!isOpen || !character) return null;
 
@@ -73,6 +171,16 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
   const [tradition, setTradition] = useState('arcane');
   const [showArchetypeCasting, setShowArchetypeCasting] = useState(false);
 
+  // Attributes (Ability Modifiers)
+  const [attributes, setAttributes] = useState({
+    str: 0,
+    dex: 2,
+    con: 1,
+    int: 4,
+    wis: 1,
+    cha: 0
+  });
+
   // Wealth
   const [pp, setPp] = useState(character.wealth?.pp || 0);
   const [gp, setGp] = useState(character.wealth?.gp || 0);
@@ -81,19 +189,19 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
 
   // Skills
   const [skills, setSkills] = useState({
-    crafting: { ...(character.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
-    performance: { ...(character.skills?.performance || { rank: 0, mod: 0, rankName: 'Untrained' }) },
-    arcana: { ...(character.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
-    nature: { ...(character.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
-    occultism: { ...(character.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
-    religion: { ...(character.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
+    crafting: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained', ...(character.skills?.crafting || {}) },
+    performance: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.performance || {}) },
+    arcana: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained', ...(character.skills?.arcana || {}) },
+    nature: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.nature || {}) },
+    occultism: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.occultism || {}) },
+    religion: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.religion || {}) }
   });
 
   // Lore Skills
   const [loreSkills, setLoreSkills] = useState(Array.isArray(character.loreSkills) ? [...character.loreSkills] : []);
   const [editorNewLoreName, setEditorNewLoreName] = useState('');
   const [editorNewLoreRank, setEditorNewLoreRank] = useState(1);
-  const [editorNewLoreMod, setEditorNewLoreMod] = useState(5);
+  const [editorNewLoreMod, setEditorNewLoreMod] = useState(7);
 
   // Feats
   const [feats, setFeats] = useState({
@@ -111,9 +219,11 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     communalCrafting: !!character.feats?.communalCrafting
   });
 
-  // Formulas
+  // Formulas & Compendium Formula Picker state
   const [formulas, setFormulas] = useState([...(character.formulas || [])]);
-  const [newFormula, setNewFormula] = useState('');
+  const [formulaSearch, setFormulaSearch] = useState('');
+  const [formulaCategory, setFormulaCategory] = useState('all');
+  const [formulaMaxLevelOnly, setFormulaMaxLevelOnly] = useState(true);
 
   // Helper to extract base class and archetype
   const parseClassAndArchetype = (rawClass = '') => {
@@ -128,7 +238,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     if (raw.includes('/')) {
       const parts = raw.split('/').map(p => p.trim());
       const matched = PF2E_CLASSES.find(c => c.toLowerCase() === parts[0].toLowerCase() || c.toLowerCase() === parts[1].toLowerCase());
-      if (matched && matched !== 'Custom') {
+      if (matched && direct !== 'Custom') {
         const archPart = parts[0].toLowerCase() === matched.toLowerCase() ? parts[1] : parts[0];
         return { cls: matched, custom: '', arch: archPart };
       }
@@ -139,7 +249,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     for (const word of words) {
       const matched = PF2E_CLASSES.find(c => c.toLowerCase() === word.toLowerCase() && c !== 'Custom');
       if (matched) {
-        const remaining = raw.replace(new RegExp(matched, 'i'), '').trim();
+        const remaining = raw.replace(new RegExp(matched, 'i'), '').trim().replace(/^[()-]+|[()-]+$/g, '').trim();
         return { cls: matched, custom: '', arch: remaining };
       }
     }
@@ -147,16 +257,57 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     return { cls: 'Custom', custom: raw, arch: '' };
   };
 
+  // Recalculate all skills and lore modifiers from level + attributes + ranks + item bonuses
+  const recalculateSkillsWithState = (nextLevel, nextAttributes, currentSkills, currentLores) => {
+    const safeLvl = Math.max(1, Math.min(20, Number(nextLevel) || 1));
+    const updatedSkills = {};
+
+    for (const [key, skData] of Object.entries(currentSkills)) {
+      const attrKey = SKILL_ATTR_MAP[key]?.attr || 'int';
+      const attrMod = Number(nextAttributes[attrKey]) || 0;
+      const rank = Number(skData.rank) || 0;
+      const itemBonus = Number(skData.itemBonus) || 0;
+      const newMod = computeSkillMod(rank, safeLvl, attrMod, itemBonus);
+      updatedSkills[key] = {
+        ...skData,
+        rank,
+        itemBonus,
+        mod: newMod,
+        rankName: RANK_NAMES[rank] || 'Untrained'
+      };
+    }
+
+    const intMod = Number(nextAttributes.int) || 0;
+    const updatedLores = (currentLores || []).map(l => {
+      const r = Number(l.rank) || 1;
+      const itemB = Number(l.itemBonus) || 0;
+      return {
+        ...l,
+        rank: r,
+        mod: computeSkillMod(r, safeLvl, intMod, itemB),
+        rankName: RANK_NAMES[r] || 'Trained'
+      };
+    });
+
+    setSkills(updatedSkills);
+    setLoreSkills(updatedLores);
+    setEditorNewLoreMod(computeSkillMod(editorNewLoreRank, safeLvl, intMod, 0));
+  };
+
   // Sync state when character or modal visibility changes
   useEffect(() => {
     if (character && isOpen) {
       setName(character.name || '');
-      setLevel(character.level || 1);
+      const initLvl = Number(character.level) || 1;
+      setLevel(initLvl);
 
       const parsed = parseClassAndArchetype(character.characterClass);
       setSelectedClass(parsed.cls);
       setCustomClass(parsed.custom);
       setArchetype(parsed.arch);
+
+      const inferredAttrs = inferCharacterAttributes(character, parsed.cls);
+      setAttributes(inferredAttrs);
 
       // Tradition detection
       const charTrad = character.spellcasting?.traditions?.[0];
@@ -183,17 +334,21 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
       setSp(character.wealth?.sp || 0);
       setCp(character.wealth?.cp || 0);
 
-      setSkills({
-        crafting: { ...(character.skills?.crafting || { rank: 1, mod: 7, rankName: 'Trained' }) },
-        performance: { ...(character.skills?.performance || { rank: 0, mod: 0, rankName: 'Untrained' }) },
-        arcana: { ...(character.skills?.arcana || { rank: 1, mod: 7, rankName: 'Trained' }) },
-        nature: { ...(character.skills?.nature || { rank: 0, mod: 0, rankName: 'Untrained' }) },
-        occultism: { ...(character.skills?.occultism || { rank: 0, mod: 0, rankName: 'Untrained' }) },
-        religion: { ...(character.skills?.religion || { rank: 0, mod: 0, rankName: 'Untrained' }) }
-      });
+      const initSkills = {
+        crafting: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained', ...(character.skills?.crafting || {}) },
+        performance: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.performance || {}) },
+        arcana: { rank: 1, mod: 7, itemBonus: 0, rankName: 'Trained', ...(character.skills?.arcana || {}) },
+        nature: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.nature || {}) },
+        occultism: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.occultism || {}) },
+        religion: { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained', ...(character.skills?.religion || {}) }
+      };
+      setSkills(initSkills);
 
-      setLoreSkills(Array.isArray(character.loreSkills) ? [...character.loreSkills] : []);
+      const initLores = Array.isArray(character.loreSkills) ? [...character.loreSkills] : [];
+      setLoreSkills(initLores);
       setEditorNewLoreName('');
+      setEditorNewLoreRank(1);
+      setEditorNewLoreMod(computeSkillMod(1, initLvl, inferredAttrs.int, 0));
 
       setFeats({
         magicalShorthand: !!character.feats?.magicalShorthand,
@@ -211,14 +366,43 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
       });
 
       setFormulas([...(character.formulas || [])]);
-      setNewFormula('');
+      setFormulaSearch('');
+      setFormulaCategory('all');
     }
   }, [character, isOpen]);
+
+  // Handle Level change -> auto-recalculate skills
+  const handleLevelChange = (newLvlVal) => {
+    const parsedLvl = Math.max(1, Math.min(20, Number(newLvlVal) || 1));
+    setLevel(newLvlVal);
+    recalculateSkillsWithState(parsedLvl, attributes, skills, loreSkills);
+  };
+
+  // Handle Attribute change -> auto-recalculate skills
+  const handleAttributeChange = (attrKey, newVal) => {
+    const clamped = Math.max(-5, Math.min(12, Number(newVal) || 0));
+    const nextAttrs = {
+      ...attributes,
+      [attrKey]: clamped
+    };
+    setAttributes(nextAttrs);
+    recalculateSkillsWithState(level, nextAttrs, skills, loreSkills);
+  };
+
+  // Apply Class Default Attributes
+  const handleApplyClassAttributes = (targetClass = selectedClass) => {
+    const classDefaults = getClassDefaultAttributes(targetClass);
+    setAttributes(classDefaults);
+    recalculateSkillsWithState(level, classDefaults, skills, loreSkills);
+  };
 
   // Handle Class change auto-suggestions
   const handleClassChange = (newCls) => {
     setSelectedClass(newCls);
-    const isCaster = SPELLCASTER_CLASSES.includes(newCls);
+    const nextAttrs = getClassDefaultAttributes(newCls);
+    setAttributes(nextAttrs);
+
+    let nextSkills = { ...skills };
 
     if (newCls === 'Wizard' || newCls === 'Magus') {
       setTradition('arcane');
@@ -233,8 +417,8 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
       setTradition('occult');
       setShowArchetypeCasting(false);
     } else if (newCls === 'Runesmith' || newCls === 'Alchemist' || newCls === 'Inventor') {
-      if (skills.crafting.rank === 0) {
-        handleSkillChange('crafting', 'rank', 1);
+      if (nextSkills.crafting.rank === 0) {
+        nextSkills.crafting = { ...nextSkills.crafting, rank: 1, rankName: 'Trained' };
       }
       setTradition('none');
       setShowArchetypeCasting(false);
@@ -242,16 +426,26 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
       setTradition('none');
       setShowArchetypeCasting(false);
     }
+
+    recalculateSkillsWithState(level, nextAttrs, nextSkills, loreSkills);
   };
 
   const handleSkillChange = (skillKey, field, value) => {
     setSkills(prev => {
-      const current = prev[skillKey] || { rank: 0, mod: 0, rankName: 'Untrained' };
-      let updatedRank = current.rank;
-      let updatedMod = current.mod;
+      const current = prev[skillKey] || { rank: 0, mod: 0, itemBonus: 0, rankName: 'Untrained' };
+      const attrKey = SKILL_ATTR_MAP[skillKey]?.attr || 'int';
+      const attrMod = Number(attributes[attrKey]) || 0;
+
+      let updatedRank = Number(current.rank) || 0;
+      let updatedItemBonus = Number(current.itemBonus) || 0;
+      let updatedMod = Number(current.mod) || 0;
 
       if (field === 'rank') {
         updatedRank = Number(value);
+        updatedMod = computeSkillMod(updatedRank, level, attrMod, updatedItemBonus);
+      } else if (field === 'itemBonus') {
+        updatedItemBonus = Number(value);
+        updatedMod = computeSkillMod(updatedRank, level, attrMod, updatedItemBonus);
       } else if (field === 'mod') {
         updatedMod = Number(value);
       }
@@ -260,6 +454,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
         ...prev,
         [skillKey]: {
           rank: updatedRank,
+          itemBonus: updatedItemBonus,
           mod: updatedMod,
           rankName: RANK_NAMES[updatedRank] || 'Untrained'
         }
@@ -267,17 +462,72 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     });
   };
 
-  const handleAddFormula = (e) => {
+  // Compendium Formula Filtering
+  const filteredCompendiumFormulas = useMemo(() => {
+    const q = formulaSearch.trim().toLowerCase();
+    const charLvl = Math.max(1, Math.min(20, Number(level) || 1));
+
+    return itemsData
+      .filter(item => {
+        if (!item.name) return false;
+        if (formulaMaxLevelOnly && (item.level ?? 0) > charLvl) return false;
+
+        if (formulaCategory !== 'all') {
+          if (formulaCategory === 'wand' && !item.isWand) return false;
+          if (formulaCategory === 'scroll' && !item.isScroll) return false;
+          if (formulaCategory !== 'wand' && formulaCategory !== 'scroll') {
+            if (item.category !== formulaCategory && item.type !== formulaCategory) return false;
+          }
+        }
+
+        if (q) {
+          const matchesName = item.name.toLowerCase().includes(q);
+          const matchesTrait = (item.traits || []).some(t => String(t).toLowerCase().includes(q));
+          return matchesName || matchesTrait;
+        }
+        return true;
+      })
+      .slice(0, 50);
+  }, [formulaSearch, formulaCategory, formulaMaxLevelOnly, level]);
+
+  const handleToggleCompendiumFormula = (itemName) => {
+    const clean = (itemName || '').trim();
+    if (!clean) return;
+    const exists = formulas.some(f => f.toLowerCase() === clean.toLowerCase());
+    if (exists) {
+      setFormulas(formulas.filter(f => f.toLowerCase() !== clean.toLowerCase()));
+    } else {
+      setFormulas([...formulas, clean]);
+    }
+  };
+
+  const handleAddCustomFormula = (e) => {
     e.preventDefault();
-    if (newFormula.trim() && !formulas.includes(newFormula.trim())) {
-      setFormulas([...formulas, newFormula.trim()]);
-      setNewFormula('');
+    const clean = formulaSearch.trim();
+    if (clean && !formulas.some(f => f.toLowerCase() === clean.toLowerCase())) {
+      setFormulas([...formulas, clean]);
+      setFormulaSearch('');
     }
   };
 
   const handleRemoveFormula = (index) => {
     setFormulas(formulas.filter((_, idx) => idx !== index));
   };
+
+  // Map known formulas to compendium info if available
+  const enrichedKnownFormulas = useMemo(() => {
+    return formulas.map((fName, index) => {
+      const match = itemsData.find(i => i.name?.toLowerCase() === String(fName).toLowerCase() || i.id === fName);
+      return {
+        index,
+        rawName: fName,
+        displayName: match ? match.name : fName,
+        level: match?.level ?? null,
+        price: match?.price ?? null,
+        category: match?.category ?? null
+      };
+    });
+  }, [formulas]);
 
   const buildUpdatedCharacter = () => {
     const finalClass = selectedClass === 'Custom'
@@ -315,6 +565,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
       name: name.trim() || 'Hero',
       level: Math.max(1, Math.min(20, Number(level) || 1)),
       characterClass: fullClassName,
+      attributes: { ...attributes },
       wealth: {
         pp: Math.max(0, Number(pp) || 0),
         gp: Math.max(0, Number(gp) || 0),
@@ -351,14 +602,14 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
   const isBaseSpellcaster = SPELLCASTER_CLASSES.includes(selectedClass);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-parchment-50 border-2 border-gold-500 rounded-2xl max-w-3xl w-full p-6 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-parchment-50 border-2 border-gold-500 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-parchment-300">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-arcane-800" />
             <h3 className="font-serif font-bold text-lg text-arcane-950">
-              Edit Character: {character.name}
+              Edit Character: {name || character.name}
             </h3>
           </div>
           <button
@@ -419,7 +670,7 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
                   min="1"
                   max="20"
                   value={level}
-                  onChange={(e) => setLevel(e.target.value)}
+                  onChange={(e) => handleLevelChange(e.target.value)}
                   className="w-full p-2 bg-parchment-50 border border-parchment-300 rounded-lg focus:ring-2 focus:ring-gold-500 font-bold text-stone-900 text-center"
                 />
               </div>
@@ -501,6 +752,80 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
             </div>
           </div>
 
+          {/* Core Attributes / Ability Modifiers (STR, DEX, CON, INT, WIS, CHA) */}
+          <div className="bg-white p-3.5 rounded-xl border border-parchment-300 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 font-serif font-bold text-sm text-arcane-950">
+                <Sliders className="w-4 h-4 text-arcane-700" />
+                <span>Core Attributes / Ability Modifiers (Stats)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleApplyClassAttributes(selectedClass)}
+                className="text-[11px] font-bold text-arcane-800 hover:text-arcane-950 bg-arcane-50 hover:bg-arcane-100 border border-arcane-300 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                title="Reset attributes to typical starting stats for the selected class"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Apply {selectedClass} Preset Stats</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-stone-600">
+              Adjusting <strong>INT</strong>, <strong>WIS</strong>, or <strong>CHA</strong> (or Character Level) automatically recalculates your Crafting, Scribing, and Lore skill modifiers below.
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+              {ATTRIBUTE_META.map(attr => {
+                const val = Number(attributes[attr.key]) || 0;
+                const formatted = val >= 0 ? `+${val}` : `${val}`;
+                return (
+                  <div
+                    key={attr.key}
+                    className={`p-2.5 rounded-xl border flex flex-col items-center text-center transition-all ${
+                      attr.highlight
+                        ? 'bg-amber-50/70 border-amber-300 shadow-sm'
+                        : 'bg-parchment-50 border-parchment-200'
+                    }`}
+                  >
+                    <span className="text-xs font-black tracking-wider text-arcane-950">{attr.label}</span>
+                    <span className="text-[10px] text-stone-500 mb-1.5 truncate max-w-full" title={attr.note}>
+                      {attr.full}
+                    </span>
+
+                    <div className="flex items-center gap-1 w-full justify-center">
+                      <button
+                        type="button"
+                        onClick={() => handleAttributeChange(attr.key, val - 1)}
+                        className="w-7 h-7 rounded-lg bg-white hover:bg-parchment-200 border border-parchment-300 font-bold text-stone-800 flex items-center justify-center shadow-sm active:scale-95"
+                        title={`Decrease ${attr.full}`}
+                      >
+                        &minus;
+                      </button>
+                      <select
+                        value={val}
+                        onChange={(e) => handleAttributeChange(attr.key, Number(e.target.value))}
+                        aria-label={`${attr.full} Modifier`}
+                        className="w-14 h-7 bg-white border border-parchment-300 rounded-lg font-mono font-black text-xs text-center text-stone-900 cursor-pointer"
+                      >
+                        {[-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                          <option key={n} value={n}>{n >= 0 ? `+${n}` : `${n}`}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => handleAttributeChange(attr.key, val + 1)}
+                        className="w-7 h-7 rounded-lg bg-white hover:bg-parchment-200 border border-parchment-300 font-bold text-stone-800 flex items-center justify-center shadow-sm active:scale-95"
+                        title={`Increase ${attr.full}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-[9px] text-stone-500 mt-1 leading-tight">{attr.note}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Purse Wealth with Platinum (pp) */}
           <div className="bg-white p-3 rounded-xl border border-parchment-300">
             <div className="flex items-center gap-1.5 mb-2 font-serif font-bold text-sm text-arcane-950">
@@ -552,42 +877,83 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
           </div>
 
           {/* Skill Modifiers & Proficiencies */}
-          <div className="bg-white p-3 rounded-xl border border-parchment-300">
-            <div className="flex items-center gap-1.5 mb-2 font-serif font-bold text-sm text-arcane-950">
-              <Hammer className="w-4 h-4 text-forge-600" />
-              <span>Skills & Modifiers</span>
+          <div className="bg-white p-3.5 rounded-xl border border-parchment-300 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 font-serif font-bold text-sm text-arcane-950">
+                <Hammer className="w-4 h-4 text-forge-600" />
+                <span>Skills & Modifiers</span>
+              </div>
+              <span className="text-[11px] text-stone-500">
+                Auto-calculates: <strong>Proficiency + Attribute + Item Bonus</strong>
+              </span>
             </div>
             <div className="space-y-2">
-              {Object.entries(skills).map(([key, data]) => (
-                <div key={key} className="flex items-center justify-between gap-2 p-2 rounded bg-parchment-50 border border-parchment-200">
-                  <span className="font-bold capitalize text-stone-800 w-28">{key}</span>
-                  
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs text-parchment-600">Rank:</label>
-                    <select
-                      value={data.rank}
-                      onChange={(e) => handleSkillChange(key, 'rank', e.target.value)}
-                      className="bg-white border border-parchment-300 rounded px-2 py-1 text-xs font-semibold text-stone-800"
-                    >
-                      <option value="0">Untrained (0)</option>
-                      <option value="1">Trained (+2+L)</option>
-                      <option value="2">Expert (+4+L)</option>
-                      <option value="3">Master (+6+L)</option>
-                      <option value="4">Legendary (+8+L)</option>
-                    </select>
-                  </div>
+              {Object.entries(skills).map(([key, data]) => {
+                const meta = SKILL_ATTR_MAP[key] || { attr: 'int', label: 'INT' };
+                const attrVal = Number(attributes[meta.attr]) || 0;
+                const rank = Number(data.rank) || 0;
+                const itemB = Number(data.itemBonus) || 0;
+                const profBonus = rank > 0 ? (rank * 2) + (Number(level) || 1) : 0;
 
-                  <div className="flex items-center gap-1.5">
-                    <label className="text-xs text-parchment-600">Total Mod:</label>
-                    <input
-                      type="number"
-                      value={data.mod}
-                      onChange={(e) => handleSkillChange(key, 'mod', e.target.value)}
-                      className="w-16 p-1 bg-white border border-parchment-300 rounded text-center font-bold text-stone-900"
-                    />
+                return (
+                  <div key={key} className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-parchment-50 border border-parchment-200">
+                    <div className="min-w-[130px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold capitalize text-stone-900 text-xs sm:text-sm">{key}</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold">
+                          {meta.label} {attrVal >= 0 ? `+${attrVal}` : attrVal}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-stone-500 block">
+                        Prof: +{profBonus} {itemB > 0 ? `• Item: +${itemB}` : ''}
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <label className="text-[11px] text-parchment-700 font-semibold">Rank:</label>
+                        <select
+                          value={data.rank}
+                          onChange={(e) => handleSkillChange(key, 'rank', e.target.value)}
+                          className="bg-white border border-parchment-300 rounded-lg px-2 py-1 text-xs font-bold text-stone-800 cursor-pointer"
+                        >
+                          <option value="0">Untrained (0)</option>
+                          <option value="1">Trained (+2+L)</option>
+                          <option value="2">Expert (+4+L)</option>
+                          <option value="3">Master (+6+L)</option>
+                          <option value="4">Legendary (+8+L)</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <label className="text-[11px] text-parchment-700 font-semibold">Item:</label>
+                        <select
+                          value={itemB}
+                          onChange={(e) => handleSkillChange(key, 'itemBonus', e.target.value)}
+                          className="bg-white border border-parchment-300 rounded-lg px-1.5 py-1 text-xs font-bold text-stone-800 cursor-pointer"
+                          title="Item bonus from tools, potency crystals, or worn items"
+                        >
+                          <option value="0">+0</option>
+                          <option value="1">+1</option>
+                          <option value="2">+2</option>
+                          <option value="3">+3</option>
+                          <option value="4">+4</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <label className="text-[11px] text-parchment-700 font-semibold">Total:</label>
+                        <input
+                          type="number"
+                          value={data.mod}
+                          onChange={(e) => handleSkillChange(key, 'mod', e.target.value)}
+                          className="w-16 p-1 bg-white border-2 border-gold-400 rounded-lg text-center font-mono font-black text-stone-900 text-xs sm:text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -598,14 +964,14 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
                 <BookOpen className="w-4 h-4 text-emerald-600" />
                 <span>Lore Skills ({loreSkills.length})</span>
               </div>
-              <span className="text-[11px] font-mono text-stone-500">Used for Downtime Earn Income</span>
+              <span className="text-[11px] font-mono text-stone-500">Used for Downtime Earn Income (INT Based)</span>
             </div>
             
             {/* Existing Lore Skills */}
             <div className="space-y-1.5">
               {loreSkills.map((lore, idx) => (
-                <div key={lore.id || idx} className="flex items-center justify-between gap-2 p-2 rounded bg-emerald-50/50 border border-emerald-200">
-                  <span className="font-bold text-stone-800 text-xs flex-1 truncate">{lore.name}</span>
+                <div key={lore.id || idx} className="flex flex-wrap items-center justify-between gap-2 p-2 rounded bg-emerald-50/50 border border-emerald-200">
+                  <span className="font-bold text-stone-800 text-xs flex-1 min-w-[120px] truncate">{lore.name}</span>
                   
                   <div className="flex items-center gap-2">
                     <label className="text-[11px] text-stone-500">Rank:</label>
@@ -613,7 +979,8 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
                       value={lore.rank}
                       onChange={(e) => {
                         const newRank = Number(e.target.value);
-                        setLoreSkills(loreSkills.map((l, i) => i === idx ? { ...l, rank: newRank, rankName: RANK_NAMES[newRank] } : l));
+                        const newMod = computeSkillMod(newRank, level, attributes.int, lore.itemBonus || 0);
+                        setLoreSkills(loreSkills.map((l, i) => i === idx ? { ...l, rank: newRank, mod: newMod, rankName: RANK_NAMES[newRank] } : l));
                       }}
                       className="bg-white border border-parchment-300 rounded px-1.5 py-0.5 text-xs font-semibold text-stone-800"
                     >
@@ -653,14 +1020,18 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
             <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-parchment-200">
               <input
                 type="text"
-                placeholder="New Lore (e.g. Sailing Lore)"
+                placeholder="New Lore (e.g. Blacksmithing Lore, Herbalism Lore)"
                 value={editorNewLoreName}
                 onChange={(e) => setEditorNewLoreName(e.target.value)}
                 className="flex-1 min-w-[140px] border border-parchment-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
               <select
                 value={editorNewLoreRank}
-                onChange={(e) => setEditorNewLoreRank(Number(e.target.value))}
+                onChange={(e) => {
+                  const r = Number(e.target.value);
+                  setEditorNewLoreRank(r);
+                  setEditorNewLoreMod(computeSkillMod(r, level, attributes.int, 0));
+                }}
                 className="border border-parchment-300 rounded-lg px-1.5 py-1 text-xs"
               >
                 <option value={1}>Trained</option>
@@ -861,51 +1232,165 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
             </div>
           </div>
 
-          {/* Known Formulas */}
-          <div className="bg-white p-3 rounded-xl border border-parchment-300">
-            <div className="flex items-center justify-between mb-2 font-serif font-bold text-sm text-arcane-950">
-              <div className="flex items-center gap-1.5">
+          {/* Known Formulas & Compendium Formula Picker */}
+          <div className="bg-white p-3.5 rounded-xl border border-parchment-300 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 font-serif font-bold text-sm text-arcane-950">
                 <BookOpen className="w-4 h-4 text-gold-700" />
-                <span>Known Formulas ({formulas.length})</span>
+                <span>Formula Book & Compendium Formula Selector ({formulas.length} Known)</span>
+              </div>
+              <label className="flex items-center gap-1.5 text-xs text-stone-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formulaMaxLevelOnly}
+                  onChange={(e) => setFormulaMaxLevelOnly(e.target.checked)}
+                  className="rounded text-forge-600 focus:ring-gold-500"
+                />
+                <span>Filter &le; Character Level ({level})</span>
+              </label>
+            </div>
+
+            {/* Search & Category Filter Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+              <div className="sm:col-span-7 relative">
+                <Search className="w-4 h-4 text-parchment-500 absolute left-2.5 top-2.5" />
+                <input
+                  type="text"
+                  value={formulaSearch}
+                  onChange={(e) => setFormulaSearch(e.target.value)}
+                  placeholder="Search 5,000+ PF2e formulas (e.g. Longsword, Striking, Healing Potion, Alchemist's Fire)..."
+                  className="w-full pl-8 pr-3 py-2 bg-parchment-50 border border-parchment-300 rounded-lg text-xs text-stone-900 font-semibold focus:ring-2 focus:ring-gold-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-5 flex gap-2">
+                <select
+                  value={formulaCategory}
+                  onChange={(e) => setFormulaCategory(e.target.value)}
+                  className="flex-1 p-2 bg-parchment-50 border border-parchment-300 rounded-lg text-xs font-bold text-stone-800 cursor-pointer"
+                >
+                  <option value="all">All Item Categories</option>
+                  <option value="weapon">Weapons & Runes</option>
+                  <option value="armor">Armor</option>
+                  <option value="shield">Shields</option>
+                  <option value="alchemical">Alchemical Items</option>
+                  <option value="potion">Potions & Oils</option>
+                  <option value="wand">Magic Wands</option>
+                  <option value="scroll">Scrolls</option>
+                  <option value="consumable">Consumables</option>
+                  <option value="held">Worn & Held Gear</option>
+                </select>
+
+                {formulaSearch.trim() && !itemsData.some(i => i.name?.toLowerCase() === formulaSearch.trim().toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={handleAddCustomFormula}
+                    className="px-2.5 py-1.5 bg-arcane-800 hover:bg-arcane-700 text-white font-bold rounded-lg text-xs shrink-0 flex items-center gap-1"
+                    title="Add custom formula name"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Custom</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            <form onSubmit={handleAddFormula} className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newFormula}
-                onChange={(e) => setNewFormula(e.target.value)}
-                placeholder="Add formula (e.g. Minor Healing Potion, Magic Wand...)"
-                className="flex-1 p-2 bg-parchment-50 border border-parchment-300 rounded-lg text-xs text-stone-800"
-              />
-              <button
-                type="submit"
-                className="px-3 py-1.5 bg-arcane-800 hover:bg-arcane-700 text-white font-bold rounded-lg text-xs flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add</span>
-              </button>
-            </form>
-
-            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
-              {formulas.map((form, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-parchment-100 border border-parchment-300 text-stone-800 text-xs"
-                >
-                  <span>{form}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFormula(idx)}
-                    className="text-red-500 hover:text-red-700 ml-1"
+            {/* Compendium Formula Picker List */}
+            <div className="border border-parchment-300 rounded-xl bg-parchment-50/70 max-h-48 overflow-y-auto divide-y divide-parchment-200">
+              {filteredCompendiumFormulas.map(item => {
+                const isKnown = formulas.some(f => String(f).toLowerCase() === item.name.toLowerCase() || f === item.id);
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleToggleCompendiumFormula(item.name)}
+                    className={`px-3 py-2 flex items-center justify-between gap-2 cursor-pointer transition-colors text-xs ${
+                      isKnown ? 'bg-emerald-50/90 hover:bg-emerald-100/80' : 'hover:bg-parchment-100'
+                    }`}
                   >
-                    &times;
-                  </button>
-                </span>
-              ))}
-              {formulas.length === 0 && (
-                <span className="text-xs text-parchment-500 italic">No formulas recorded yet.</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-stone-900 truncate">{item.name}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-parchment-200 text-stone-700 font-semibold capitalize">
+                          {item.category || item.type}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-parchment-600 flex items-center gap-2 mt-0.5">
+                        <span className="font-bold text-forge-800">Lvl {item.level}</span>
+                        <span>&bull;</span>
+                        <span className="font-mono font-semibold text-gold-800">{item.price}</span>
+                        <span>&bull;</span>
+                        <span className="capitalize">{item.rarity || 'common'}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleCompendiumFormula(item.name);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg font-bold text-xs flex items-center gap-1 shrink-0 transition-colors ${
+                        isKnown
+                          ? 'bg-emerald-600 text-white hover:bg-red-600'
+                          : 'bg-forge-700 hover:bg-forge-600 text-white'
+                      }`}
+                    >
+                      {isKnown ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Known</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Formula</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+
+              {filteredCompendiumFormulas.length === 0 && (
+                <div className="p-4 text-center text-xs text-parchment-500 italic">
+                  No matching compendium items found. Try unchecking the level filter or click &ldquo;+ Custom&rdquo; to add a custom formula.
+                </div>
               )}
+            </div>
+
+            {/* Recorded Formulas Pill List */}
+            <div>
+              <span className="block text-[11px] font-bold text-stone-700 uppercase mb-1.5">
+                Recorded in Character&apos;s Formula Book ({enrichedKnownFormulas.length}):
+              </span>
+              <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1">
+                {enrichedKnownFormulas.map((fItem) => (
+                  <span
+                    key={fItem.index}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-300 text-stone-900 text-xs font-semibold shadow-sm"
+                  >
+                    <span>{fItem.displayName}</span>
+                    {fItem.level !== null && (
+                      <span className="text-[10px] px-1 rounded bg-emerald-200/80 text-emerald-950 font-bold">
+                        Lvl {fItem.level}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFormula(fItem.index)}
+                      className="text-stone-400 hover:text-red-600 font-bold ml-0.5"
+                      title="Remove formula"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+                {enrichedKnownFormulas.length === 0 && (
+                  <span className="text-xs text-parchment-500 italic">
+                    No formulas recorded yet. Click &ldquo;+ Add Formula&rdquo; on any compendium item above!
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>

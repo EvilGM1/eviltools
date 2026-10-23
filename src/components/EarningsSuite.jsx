@@ -309,11 +309,11 @@ export function EarningsSuite({
       {/* Top Banner: Character Purse & Suite Introduction */}
       <div className="bg-gradient-to-r from-emerald-950 via-arcane-950 to-emerald-950 border-2 border-emerald-500/50 rounded-2xl p-5 shadow-xl text-parchment-100 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shadow-inner flex-shrink-0">
             <Coins className="w-8 h-8 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-serif font-bold text-emerald-200">
                 EvilEarnings Suite
               </h2>
