@@ -157,10 +157,8 @@ export function computeSkillMod(rank, level, attrMod, itemBonus = 0) {
 }
 
 export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
-  if (!isOpen || !character) return null;
-
-  const [name, setName] = useState(character.name || '');
-  const [level, setLevel] = useState(character.level || 1);
+  const [name, setName] = useState(character?.name || '');
+  const [level, setLevel] = useState(character?.level || 1);
   
   // Class & Archetype split
   const [selectedClass, setSelectedClass] = useState('Wizard');
@@ -598,6 +596,8 @@ export function CharacterEditorModal({ isOpen, onClose, character, onSave }) {
     onSave(updated);
     exportCharacterJSON(updated);
   };
+
+  if (!isOpen || !character) return null;
 
   const isBaseSpellcaster = SPELLCASTER_CLASSES.includes(selectedClass);
 

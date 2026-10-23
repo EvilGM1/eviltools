@@ -824,7 +824,7 @@ export function CraftingSuite({
                           Learn Formula (Free)
                         </button>
                         {(() => {
-                          const formulaCostCopper = getFormulaPriceCopper(effectiveItemLevel);
+                          const formulaCostCopper = getFormulaPriceCopper(itemLevel);
                           const currentCopper = wealthToCopper(character?.wealth);
                           const canAffordFormula = currentCopper >= formulaCostCopper;
                           return (
@@ -847,7 +847,7 @@ export function CraftingSuite({
                               }`}
                               title={
                                 canAffordFormula
-                                  ? `Purchase Lv.${effectiveItemLevel} formula for ${formatWealth(copperToWealth(formulaCostCopper))}`
+                                  ? `Purchase Lv.${itemLevel} formula for ${formatWealth(copperToWealth(formulaCostCopper))}`
                                   : `Insufficient funds (${formatWealth(copperToWealth(formulaCostCopper))} required)`
                               }
                             >

@@ -519,15 +519,17 @@ export function App() {
         earningsHistory={earningsHistory}
       />
 
-      <CharacterEditorModal
-        isOpen={isEditOpen}
-        onClose={() => {
-          setIsEditOpen(false);
-          setEditingCharacter(null);
-        }}
-        character={editingCharacter || activeCharacter}
-        onSave={handleUpdateActiveCharacter}
-      />
+      {isEditOpen && (
+        <CharacterEditorModal
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setEditingCharacter(null);
+          }}
+          character={editingCharacter || activeCharacter}
+          onSave={handleUpdateActiveCharacter}
+        />
+      )}
     </div>
   );
 }
